@@ -1,0 +1,8 @@
+i2c encoder is for vex encoders
+
+charlieplex is for mseduino charlieplex leds (and a single pushbutton)
+uSTimer is used in the charlieplex library?
+
+newPing is a fantastic ultrasonic sensor library
+
+VarSpeedServo allows servos to move at certain speeds, saves having to write sweep and doesn't block
