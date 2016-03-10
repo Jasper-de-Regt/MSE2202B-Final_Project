@@ -1,0 +1,21 @@
+Locomotion Ideas
+
+Flying
+Pros - can be accurately maneuvered, fast,
+Cons - expensive, complex, dangerous (spinning props)
+
+Walking
+Pros - sexy, could maybe eleiminate arm (kneel down to pick things up)
+Cons - complicated design (many moving parts), difficult to code, expensive, requires a lot of time to design and build
+
+Tracks
+Pros - maneuvarable, able to handle terrain changes, easy to program (skidsteer)
+Cons - takes up a large amount of robot space, inneficient (power/motor wise), heavy, tessaracts could become entangled
+
+OmniWheels
+Pros - extra manuevarable, efficient, compact
+Cons - Cost $$, more complex programming (do we really need to move sideways?), wheels have many moving parts (not good for production models)
+
+Wheels
+Pros - cheap, easy to code/build, eficient, compact, standard component, easy to manufacture, easy to maintain (just needs occasional cleaning maybe)
+Cons - perhaps too simple?
