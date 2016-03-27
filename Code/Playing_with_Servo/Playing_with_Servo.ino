@@ -2,12 +2,13 @@
 
 Servo serv0;
 int delayBy = 10;
+int servoPin1 = 7;
 
 
 void setup() {
   Serial.begin(9600);
 
-  serv0.attach(7);
+  serv0.attach(servoPin1);
 
   //Sets the initial servo position
   serv0.write(180);
@@ -26,7 +27,7 @@ void loop() {
 
 }
 
-void moveToPosn(int initial, int final, int increment, bool hardStartTrue) {
+void moveToPosnByInc(int initial, int final, int increment, bool hardStartTrue) {
   //If the position must start at the initial mark
   if (hardStartTrue == true) { 
     while (serv0.read() != initial) {
@@ -47,4 +48,17 @@ void moveToPosn(int initial, int final, int increment, bool hardStartTrue) {
     }
   }
 
+}
+
+void moveToPosn(int initial, int final, bool hardStartTrue) {
+  //If the position must start at the initial mark
+  if (hardStartTrue == true) { 
+    while (serv0.read() != initial) {
+      serv0.write(initial);
+    }
+  }
+  
+  while (serv0.read() != final) {
+      serv0.write(final);
+    }
 }
