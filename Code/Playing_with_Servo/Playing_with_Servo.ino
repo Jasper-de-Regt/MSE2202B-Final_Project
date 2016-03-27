@@ -22,14 +22,15 @@ void loop() {
   delay(50);
   Serial.println(serv0.read());*/
 
-  moveToPosn(180, 0, 1);
-  serv0.detach();
+  moveToPosn(180, 0, 0);
+  moveToPosnByInc(180, 0, 1, 0);
+  serv0.detach(); Serial.println("Detached");
 
 }
 
 void moveToPosnByInc(int initial, int final, int increment, bool hardStartTrue) {
   //If the position must start at the initial mark
-  if (hardStartTrue == true) { 
+  if (hardStartTrue == true) {
     while (serv0.read() != initial) {
       serv0.write(initial);
     }
@@ -51,14 +52,35 @@ void moveToPosnByInc(int initial, int final, int increment, bool hardStartTrue) 
 }
 
 void moveToPosn(int initial, int final, bool hardStartTrue) {
+  if (serv0.attached() == false) {
+    serv0.attach(servoPin1);
+
+  }
+
+
+
   //If the position must start at the initial mark
-  if (hardStartTrue == true) { 
+  if (hardStartTrue == true) {
+    Serial.println("Hard Start");
     while (serv0.read() != initial) {
       serv0.write(initial);
+      delay(delayBy);
     }
   }
-  
+  Serial.print("Diagnostic: ");
+  Serial.print(serv0.read());
+  Serial.print(", ");
+  Serial.println(final);
+
   while (serv0.read() != final) {
-      serv0.write(final);
+    Serial.println("Movement - MTP");
+    while (serv0.read() > final) {
+      serv0.write(serv0.read() - 1);
+      delay(delayBy);
     }
+    while (serv0.read() < final) {
+      serv0.write(serv0.read() + 1);
+      delay(delayBy);
+    }
+  }
 }
