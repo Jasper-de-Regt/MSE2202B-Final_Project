@@ -15,6 +15,14 @@ void setup() {
 
 
   Serial.println(serv0.read());
+
+  if (serv0.read() > 15) {
+    while (serv0.read() > 15) {
+      serv0.write(serv0.read() - 1);
+    }
+  }
+  
+  
 }
 
 void loop() {
@@ -23,7 +31,7 @@ void loop() {
   Serial.println(serv0.read());*/
 
   moveToPosn(180, 30, 0);
-  moveToPosnByInc(0, 180, 3, 1);
+  //moveToPosnByInc(0, 180, 3, 1);
   serv0.detach(); Serial.println("Detached");
 
 }
@@ -56,8 +64,8 @@ void moveToPosnByInc(int initial, int final, int increment, bool hardStartTrue) 
 
 
 void moveToPosn(int initial, int final, bool hardStartTrue) {
-  
-  
+
+
   if (serv0.attached() == false) {
     serv0.attach(servoPin1);
   }
@@ -82,7 +90,7 @@ void moveToPosn(int initial, int final, bool hardStartTrue) {
       delay(delayBy);
     }
   }
-  
-  
-  
+
+
+
 }
