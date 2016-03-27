@@ -1,7 +1,7 @@
 #include <Servo.h>
 
 Servo serv0;
-int delayBy = 10;
+int delayBy = 10; //Works as low as 2 (for speed).
 int servoPin1 = 7;
 
 
@@ -11,7 +11,7 @@ void setup() {
   serv0.attach(servoPin1);
 
   //Sets the initial servo position
-  serv0.write(180);
+  serv0.write(0);
 
 
   Serial.println(serv0.read());
@@ -30,7 +30,9 @@ void loop() {
   delay(50);
   Serial.println(serv0.read());*/
 
-  moveToPosn(180, 30, 0);
+  moveToPosn(0, 110, 0);
+  delay(500);
+  moveToPosn(110, 0, 0);
   //moveToPosnByInc(0, 180, 3, 1);
   serv0.detach(); Serial.println("Detached");
 
@@ -66,9 +68,9 @@ void moveToPosnByInc(int initial, int final, int increment, bool hardStartTrue) 
 void moveToPosn(int initial, int final, bool hardStartTrue) {
 
 
-  if (serv0.attached() == false) {
-    serv0.attach(servoPin1);
-  }
+  //if (serv0.attached() == false) {
+  //  serv0.attach(servoPin1);
+  //}
 
   //If the position must start at the initial mark
   if (hardStartTrue == true) {
@@ -89,6 +91,8 @@ void moveToPosn(int initial, int final, bool hardStartTrue) {
       serv0.write(serv0.read() + 1);
       delay(delayBy);
     }
+    Serial.print("Status: "); Serial.println(serv0.read());
+    
   }
 
 
