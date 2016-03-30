@@ -13,26 +13,28 @@ const int frontRightPingPin = 7;
 const int backRightPingPin = 4;
 
 int myspeed = 1600;
-int setpoint = 5;
+int setpoint = 100;
 
 NewPing frontRightPingSensor(frontRightPingPin, frontRightPingPin, 200);
 NewPing backRightPingSensor(backRightPingPin, backRightPingPin, 200);
+
+
+
+
+
+
 
 //*********************************************************************************************************************************************************************************************************************************************************************//
 //*********************************************************************************************************************************************************************************************************************************************************************//
 
 void setup() {
-
-  Serial.begin(9600);
-
-
   // set up drive motors
   pinMode(rightServoPin, OUTPUT);
   pinMode(leftServoPin, OUTPUT);
   servo_rightMotor.attach(rightServoPin);
   servo_leftMotor.attach(leftServoPin);
 
-
+  Serial.begin(9600);
 
 }
 
@@ -41,8 +43,12 @@ void setup() {
 
 void loop() {
 
-  int  frontRightSensorData = frontRightPingSensor.ping_in();
-  int backRightSensorData = backRightPingSensor.ping_in();
+
+
+
+  int speedModifier = (myspeed-1500)/3;
+  int  frontRightSensorData = frontRightPingSensor.ping_cm();
+  int backRightSensorData = backRightPingSensor.ping_cm();
 
   // if the correct distance away
   if ((frontRightSensorData + backRightSensorData) / 2 == setpoint) {
@@ -55,14 +61,14 @@ void loop() {
     //if angled towards wall
     if (frontRightSensorData < backRightSensorData) {
       //turn away a little
-      servo_rightMotor.writeMicroseconds(myspeed + 20);
-      servo_leftMotor.writeMicroseconds(myspeed - 20);
+      servo_rightMotor.writeMicroseconds(myspeed + speedModifier);
+      servo_leftMotor.writeMicroseconds(myspeed - speedModifier);
     }
     //if angled away
     if (frontRightSensorData > backRightSensorData) {
       // turn towards
-      servo_rightMotor.writeMicroseconds(myspeed - 20);
-      servo_leftMotor.writeMicroseconds(myspeed + 20);
+      servo_rightMotor.writeMicroseconds(myspeed - speedModifier);
+      servo_leftMotor.writeMicroseconds(myspeed + speedModifier);
     }
   }
 
@@ -71,31 +77,31 @@ void loop() {
     // if parallel
     if (frontRightSensorData == backRightSensorData) {
       //parallel and too close, turn away slightly
-      servo_rightMotor.writeMicroseconds(myspeed + 20);
-      servo_leftMotor.writeMicroseconds(myspeed - 20);
+      servo_rightMotor.writeMicroseconds(myspeed + speedModifier);
+      servo_leftMotor.writeMicroseconds(myspeed - speedModifier);
     }
     //if angled towards
     if (frontRightSensorData < backRightSensorData) {
       //you are too close and heading closer, turn away more
-      servo_rightMotor.writeMicroseconds(myspeed + 40);
-      servo_leftMotor.writeMicroseconds(myspeed - 40);
+      servo_rightMotor.writeMicroseconds(myspeed + speedModifier);
+      servo_leftMotor.writeMicroseconds(myspeed - speedModifier);
     }
     // if angled away
     if (frontRightSensorData > backRightSensorData) {
-        // thats good because your too close, drive straight
-        servo_rightMotor.writeMicroseconds(myspeed);
-        servo_leftMotor.writeMicroseconds(myspeed);
-      }
+      // thats good because your too close, drive straight
+      servo_rightMotor.writeMicroseconds(myspeed);
+      servo_leftMotor.writeMicroseconds(myspeed);
+    }
   }
 
 
- //if too far
+  //if too far
   if ((frontRightSensorData + backRightSensorData) / 2 > setpoint) {
     // if parallel
     if (frontRightSensorData == backRightSensorData) {
       //parallel and too far, turn closer slightly
-      servo_rightMotor.writeMicroseconds(myspeed - 20);
-      servo_leftMotor.writeMicroseconds(myspeed + 20);
+      servo_rightMotor.writeMicroseconds(myspeed - speedModifier);
+      servo_leftMotor.writeMicroseconds(myspeed + speedModifier);
     }
     //if angled towards
     if (frontRightSensorData < backRightSensorData) {
@@ -105,10 +111,10 @@ void loop() {
     }
     // if angled away
     if (frontRightSensorData > backRightSensorData) {
-        // too far and heading further away, turn in a bunch
-        servo_rightMotor.writeMicroseconds(myspeed-40);
-        servo_leftMotor.writeMicroseconds(myspeed+40);
-      }
+      // too far and heading further away, turn in a bunch
+      servo_rightMotor.writeMicroseconds(myspeed - speedModifier);
+      servo_leftMotor.writeMicroseconds(myspeed + speedModifier);
+    }
   }
 
 
