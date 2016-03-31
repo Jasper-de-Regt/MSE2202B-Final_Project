@@ -4,6 +4,7 @@
 #include <CharliePlexM.h>
 #include <Wire.h>
 #include <I2CEncoder.h>
+#include "robot_functions.h" //this is our header file
 
 /*
 Naming conventions:
