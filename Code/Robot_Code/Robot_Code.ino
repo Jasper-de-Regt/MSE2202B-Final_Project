@@ -27,7 +27,8 @@ Servo servo_arm_motor;
 Servo servo_wrist_motor;
 Servo servo_magnet_motor;
 
-
+I2CEncoder encoder_rightMotor;
+I2CEncoder encoder_leftMotor;
 I2CEncoder encoder_turntable_motor;
 I2CEncoder encoder_arm_motor;
 
@@ -35,8 +36,15 @@ I2CEncoder encoder_arm_motor;
 
 //port pin constants
 
-const int ci_turntable_motor = 2;
-const int ci_arm_motor = 3;
+const int ci_turntable_motor = 10;
+const int ci_arm_motor = 11;
+const int ci_hall_effect = 6;
+const int ci_right_motor = 8;
+const int ci_left_motor = 9;
+const int ci_wrist_servo = 5;
+const int ci_IR_crown=7;    //High when no tesseract, low when tesseract
+const int ci_magnet_servo = 4;
+const int ci_arm_linetracker = 3;
 const int ci_I2C_SDA = A4;         // I2C data = white
 const int ci_I2C_SCL = A5;         // I2C clock = yellow
 
@@ -70,8 +78,17 @@ void setup() {
   pinMode(ci_arm_motor, OUTPUT);
   servo_arm_motor.attach(ci_arm_motor);
 
+  // setup encoders. Must be initiliazed in the order that they are chained together,
+  // starting with the encoder directly attached to the arduino
+  encoder_leftMotor.init(1.0 / 3.0 * MOTOR_393_SPEED_ROTATIONS, MOTOR_393_TIME_DELTA);
+  encoder_leftMotor.setReversed(false);  // adjust for positive count when moving forward
+  
+  encoder_rightMotor.init(1.0 / 3.0 * MOTOR_393_SPEED_ROTATIONS, MOTOR_393_TIME_DELTA);
+  encoder_rightMotor.setReversed(true);  // adjust for positive count when moving forward
+  
   encoder_turntable_motor.init(1.0 / 3.0 * MOTOR_393_SPEED_ROTATIONS, MOTOR_393_TIME_DELTA);
   encoder_turntable_motor.setReversed(false);  // adjust for positive count when moving forward
+  
   encoder_arm_motor.init(1.0 / 3.0 * MOTOR_393_SPEED_ROTATIONS, MOTOR_393_TIME_DELTA);
   encoder_arm_motor.setReversed(true);  // adjust for positive count when turning clockwise
 
@@ -90,13 +107,21 @@ void loop() {
   Serial.println(l_arm_motor_position );
 #endif
 
-if(bt_IRcrown_detection==true){
+//assuming the driving code is above
+
+if(bt_IRcrown_detection==true){  // if tesseract detected
   stopDrive();
-  driveStraightAheadEncoders(1400,130);
+driveStraightAheadEncoders(1400,130); // back up 2in
+armEncoderPosition(ci_arm_half_position); // raise arm to an angle of 45 degrees
+<<<<<<< HEAD
+turnTurntableEncodersPosition(ci_turntable_left_position); // move turntable arm to the leftmost extremity
+=======
+turnTurntableEncodersPosition(ci_turntable_left_position); // move turntable arm to the leftmost extremity 
+>>>>>>> refs/remotes/origin/Michael-Henderson-branch
+
 }
+
 else continue;
-
-
 }
 
 
