@@ -9,15 +9,15 @@
 /*
 Naming conventions:
 
-*camelcase
+*camelcase for function
 - E.g. itLooksLikeThis
 
-*significant words in the title should be separated by underscores "_"
+*significant words in the title should be separated by underscores "_" **for variables
 - E.g. motor_pin_one
 
 *CAPITALIZE ACRONYMS
 - E.g. IR instead of infrared.
-       LED instead of light_emitting_diode or lightEmittingDiode
+       LED instead of light_emitting_diode (variable) or lightEmittingDiode (function)
 
 */
 
@@ -54,11 +54,15 @@ const int ci_arm_modetwo_dropoff = ;             //  "
 const int ci_wrist_modetwo_dropoff = ;           //  "
 const int ci_arm_wall_tesseract_scan = ;         //  "
 const int ci_wrist_wall_tesseract_scan = ;       //  "
+const int ci_wrist_position_perpendicular = ;    //  " Wrist bar is perpendicular to the arm.
+const int ci_wrist_position_parallel = ;         //  " Wrist bar is parallel to the arm.
 
 boolean bt_IRcrown_detection = ;                 //  "
 
 long l_turntable_motor_position;
 long l_arm_motor_position;
+
+const int ci_drive_speed = 1600;
 
 void setup() {
   Wire.begin();        // Wire library required for I2CEncoder library
@@ -90,65 +94,77 @@ void loop() {
   Serial.println(l_arm_motor_position );
 #endif
 
-/***************************************************************************************************************************/
-/*                                               MODE 1                                                                    */
-/***************************************************************************************************************************/
+  /***************************************************************************************************************************/
+  /*                                               MODE 1                                                                    */
+  /***************************************************************************************************************************/
 
 
-/*
-Logic
+  /*
+  Logic
 
-Calibrated (sensors, servos)? If no, calibrate. If yes, proceed.
+  Calibrated (sensors, servos)? If no, calibrate. If yes, proceed.
 
-Drive
+  Drive
 
-If a wall has been detected in front of the device
-  Turn 90 (alternating right and left) -> keep a counter
-  Then turn another 90 degrees (same direction)
-  Resume driving
+  If a wall has been detected in front of the device
+    Turn 90 (alternating right and left) -> keep a counter
+    Then turn another 90 degrees (same direction)
+    Resume driving
 
-If the IR sensor has been tripped,
-  stop driving
-  Drive backward 2" (130 encoder ticks)
-  stop driving
-  Move the arm to the left side
-  Lower the wrist
-  Sweep the arm from side to side while reading from the Hall Effect sensor
+  If the IR sensor has been tripped,
+    stop driving
+    Drive backward 2" (130 encoder ticks)
+    stop driving
+    Move the arm to the left side
+    Lower the wrist
+    Sweep the arm from side to side while reading from the Hall Effect sensor
+
+    If a Hall Effect sensor detects a large enough change, record the encoder position of the turntable servo motor
+      move the turntable servo motor back to that position
+
+    If after 1 sweep, the Hall Effect sensor doesn't detect a change
+      Move the turntable servo to the left position
+      Lower the arm servo (a.k.a. "elbow") so that the end effector is low to the ground
+      Move the turntable servo to the right position (to sweep the bad tesseract out of the way)
+    ELSE If the Hall Effect sensor detects a large enough change
+      Lower the magnet servo to lower the magnet -> picking up the tesseract
+      Raise the wrist servo so the end effector support bar is parallel to the ground
+      Drive back to the origin //Need to fully define logic how to do that
+      Rotate the arm to the side of the device (logic determines which side to move to)
+      Drive forward slowly (toward the corner of the arena)
+      Scan with the IR sensor on the arm
+
+      If the analog reading is defined in the range of an empty space (after reading 1 tape value) *calibrated values
+        stop driving
+        Raise the arm (elbow) ~30 degrees
+        Lower the wrist so it hangs vertically
+        Raise the magnet servo to raise the magnet -> releases servo
+        Raise the wrist so the IR sensor is parallel with the ground
+        Drive back to the origin (reverse drive?)
+
+  //NEW CYCLE
+
+
+
+  */
+
+
+  //May just use
+  //followWall(ci_drive_speed,'L', 5); //Drives with keeping the left ultrasonic sensor 5 cm from the wall
+  driveStraightAheadEncoders(ci_drive_speed, 7736); //Encoder tickers corresponds to 10 ft. May get interrupted by a sensor getting tripped.
   
-  If a Hall Effect sensor detects a large enough change, record the encoder position of the turntable servo motor
-    move the turntable servo motor back to that position
-  
-  If after 1 sweep, the Hall Effect sensor doesn't detect a change
-    Move the turntable servo to the left position
-    Lower the arm servo (a.k.a. "elbow") so that the end effector is low to the ground
-    Move the turntable servo to the right position (to sweep the bad tesseract out of the way)
-  ELSE If the Hall Effect sensor detects a large enough change
-    Lower the magnet servo to lower the magnet -> picking up the tesseract
-    Raise the wrist servo so the end effector support bar is parallel to the ground
-    Drive back to the origin //Need to fully define logic how to do that
-    Rotate the arm to the side of the device (logic determines which side to move to)
-    Drive forward slowly (toward the corner of the arena)
-    Scan with the IR sensor on the arm 
-    
-    If the analog reading is defined in the range of an empty space (after reading 1 tape value) *calibrated values
-      stop driving
-      Raise the arm (elbow) ~30 degrees
-      Lower the wrist so it hangs vertically
-      Raise the magnet servo to raise the magnet -> releases servo
-      Raise the wrist so the IR sensor is parallel with the ground
-      Drive back to the origin (reverse drive?)
+  //If proximity to wall is <= 5 cm AND the wrist servo is 
+  if ((ui_front_distance_reading <= 5) && (servo_wrist_motor.read() >= ci_wrist_parallel)) {
+    skidsteerNinetyRight(ci_drive_speed);
+  }
 
-//NEW CYCLE
-  
-  
 
-*/
 
-if(bt_IRcrown_detection==true){
-  stopDrive();
-  driveStraightAheadEncoders(1400,130);
-}
-else continue;
+  if (bt_IRcrown_detection == true) {
+    stopDrive();
+    driveStraightAheadEncoders(1400, 130);
+  }
+  else continue;
 
 
 }
