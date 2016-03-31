@@ -4,6 +4,22 @@
 #include <CharliePlexM.h>
 #include <Wire.h>
 #include <I2CEncoder.h>
+#include "robot_functions.h" //this is our header file
+
+/*
+Naming conventions:
+
+*camelcase
+- E.g. itLooksLikeThis
+
+*significant words in the title should be separated by underscores "_"
+- E.g. motor_pin_one
+
+*CAPITALIZE ACRONYMS
+- E.g. IR instead of infrared.
+       LED instead of light_emitting_diode or lightEmittingDiode
+
+*/
 
 
 Servo servo_turntable_motor;
