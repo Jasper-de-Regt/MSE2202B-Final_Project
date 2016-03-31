@@ -7,6 +7,7 @@ void moveToPosn(servo, servo pin, initial posn, final posn, bool to start at ini
 void moveFurtherFromWall(int driveSpeed, char wallSide); //wallSide should be either R or L (capital or lowercase)
 void skidsteerNinetyRight(int driveSpeed); // driveSpeed will be a constant as defined in the main code 
 void skidsteerNinetyLeft(int driveSpeed) // Same note as above
+void driveStraightAheadEncoders(int driveSpeed, int encoderTicks); //driveSpeed is a constant, encoder ticks corresponds to the distance you want to travel. **1000 encoder ticks makes for about 15.5" or 39.4cm
 
 */
 
@@ -86,6 +87,8 @@ void skidsteerNinetyLeft(int driveSpeed) {
   }
   stopDrive();
 }
+
+
 
 // call this to drive "straight" ahead to a new encoder value
 // for example this will drive straight ahead at speed 1600 until both motors have incremented 1000 encdoer ticks. driveStraightAheadEncoders(1600, 1000);

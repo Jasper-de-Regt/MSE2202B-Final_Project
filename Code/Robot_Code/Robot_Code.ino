@@ -15,6 +15,10 @@ Naming conventions:
 *significant words in the title should be separated by underscores "_"
 - E.g. motor_pin_one
 
+*CAPITALIZE ACRONYMS
+- E.g. IR instead of infrared.
+       LED instead of light_emitting_diode or lightEmittingDiode
+
 */
 
 
