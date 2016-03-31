@@ -30,7 +30,7 @@ const int ci_turntable_middle_position = 980;    //  "
 const int ci_turntable_right_position = 1540;    //  "
 const int ci_arm_vertical_position = 0;          //  "
 const int ci_arm_half_position = 200;            //  "
-const int ci_arm_extended_position = 400;        //  "
+const int ci_arm_horizontal_position = 400;      //  "
 
 long l_turntable_motor_position;
 long l_arm_motor_position;
