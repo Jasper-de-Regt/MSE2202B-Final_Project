@@ -133,16 +133,18 @@ void armEncoderPosition(int encoderPosition) {
   stopArm();
 }
 
-void measureHallEffect(){
-  int raw=analogRead()
+int hallEffectMeasurement(){
+  return analogRead(ci_hall_effect); //Range: 0-1024
 }
 
 // scans for fluctuating magnetic field to see if there is a magnetic tesseract, return true if true
 void tesseractScanSweep(int maxPosition) {
   for(int i=encoder_turntable_motor.getRawPosition(); i<maxPosition; i+10){
   turnTurntableEncodersPosition(i);
-  //if(hall effect gets funky){}
-  //break;
+  if(/*hallEffectMeasurement*/){       //checks to see if there is an abnormality in the hall effects analog read, if yes then break the loop
+    break;
+    }
+  
   }
 }
 
