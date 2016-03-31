@@ -124,7 +124,11 @@ void armEncoderPosition(int encoderPosition) {
     while ((encoder_arm_motor.getRawPosition() - encoderPosition) < 0) {
       servo_arm_motor.writeMicroseconds(1600);
     }
+<<<<<<< HEAD
   }  
+=======
+  }
+>>>>>>> refs/remotes/origin/Michael-Henderson-branch
   else {
     while ((encoder_arm_motor.getRawPosition() - encoderPosition) > 0) {
       servo_arm_motor.writeMicroseconds(1400);
@@ -133,10 +137,27 @@ void armEncoderPosition(int encoderPosition) {
   stopArm();
 }
 
+<<<<<<< HEAD
 // scans for fluctuating magnetic field to see if there is a magnetic tesseract, return true if true
 void tesseractScanSweep(int minPosition, int maxPosition) {
 
   }
+=======
+int hallEffectMeasurement(){
+  return analogRead(ci_hall_effect); //Range: 0-1024
+}
+
+// scans for fluctuating magnetic field to see if there is a magnetic tesseract, return true if true
+void tesseractScanSweep(int maxPosition) {
+  for(int i=encoder_turntable_motor.getRawPosition(); i<maxPosition; i+10){
+  turnTurntableEncodersPosition(i);
+  if(/*hallEffectMeasurement*/){       //checks to see if there is an abnormality in the hall effects analog read, if yes then break the loop
+    break;
+    }
+  
+  }
+}
+>>>>>>> refs/remotes/origin/Michael-Henderson-branch
 
 // call this function to follow a wall. Example followWall(R, 15, 1600) will follow a wall on the right side, maintaining a distance of 15cm, at a speed of 1600
 void followWall(int driveSpeed, char wallSide, int desiredDistance) {
