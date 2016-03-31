@@ -90,13 +90,15 @@ void loop() {
   Serial.println(l_arm_motor_position );
 #endif
 
+//assuming the driving code is above
+
 if(bt_IRcrown_detection==true){
   stopDrive();
-  driveStraightAheadEncoders(1400,130);
+driveStraightAheadEncoders(1400,130);
+
 }
+
 else continue;
-
-
 }
 
 
