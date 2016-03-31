@@ -17,17 +17,20 @@ I2CEncoder encoder_ArmMotor;
 
 //port pin constants
 
-const int ci_TurnTable_Motor = 7;
-const int ci_Arm_Motor = 8;
+const int ci_TurnTable_Motor = 2;
+const int ci_Arm_Motor = 3;
 const int ci_I2C_SDA = A4;         // I2C data = white
 const int ci_I2C_SCL = A5;         // I2C clock = yellow
 
 //Position constants
-const int ci_Turntable_Left_Position = 0;       // Experiment to determine appropriate value
-const int ci_Turntable_Middle_Position = 70;    //  "
-const int ci_Turntable_Right_Position = 140;    //  "
+const int ci_Turntable_Left_Position = 400;     // Experiment to determine appropriate value
+const int ci_Turntable_Middle_Position = 980;    //  "
+const int ci_Turntable_Right_Position = 1540;    //  "
 const int ci_Arm_Vertical_Position = 0;         //  "
-const int ci_Arm_Extended_Position = 90;        //  "
+const int ci_Arm_Extended_Position = 400;        //  "
+
+long l_Turntable_Motor_Position;
+long l_Arm_Motor_Position;
 
 void setup() {
   Wire.begin();        // Wire library required for I2CEncoder library
