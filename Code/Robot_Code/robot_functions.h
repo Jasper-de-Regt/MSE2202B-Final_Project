@@ -1,31 +1,13 @@
 #ifndef robot_functions
 #define robot_functions
 
-
 /* Function List + How to Call
 
-Arm Servo functions
-void moveToPosn(servo, servo pin, initial posn, final posn, bool to start at initial);
-
-
-Driving functions
-void stopDrive(); //Stops the motors
-void driveStraight(int driveSpeed); //Sets both motors at the same speed
-void driveStraightAheadEncoders(int driveSpeed, int encoderTicks); //driveSpeed is a constant, encoder ticks corresponds to the distance you want to travel. **1000 encoder ticks makes for about 15.5" or 39.4cm
-void turnRight(int driveSpeed, int speedModifier); //driveSpeed is const. speedModifier is added/subtracted from left/right respectively.
-void turnRightSharp(int driveSpeed, int speedModifier); //similar to turnRight(), but speedModifier is multiplied by 1.5
-void turnLeft(int driveSpeed, int speedModifier); //driveSpeed is const. speedModifier is added/subtracted from right/left respectively.
-void turnLeftSharp(int driveSpeed, int speedModifier); //similar to turnLeft(), but speedModifier is multiplied by 1.5
-
-
-Wall-Following functions
-void followWall(int driveSpeed, char wallSide, int desiredDistance); // call to follow a wall. Example followWall(R, 15, 1600) will follow a wall on the right side, maintaining a distance of 15cm, at a speed of 1600
-void moveFurtherFromWall(int driveSpeed, char wallSide); //wallSide should be either R or L (capital or lowercase)
-
-
-Turning functions
-void skidsteerNinetyRight(int driveSpeed); // driveSpeed will be a constant as defined in the main code 
-void skidsteerNinetyLeft(int driveSpeed) // Same note as above
+  void moveToPosn(servo, servo pin, initial posn, final posn, bool to start at initial);
+  void moveFurtherFromWall(int driveSpeed, char wallSide); //wallSide should be either R or L (capital or lowercase)
+  void skidsteerNinetyRight(int driveSpeed); // driveSpeed will be a constant as defined in the main code
+  void skidsteerNinetyLeft(int driveSpeed) // Same note as above
+  void driveStraightAheadEncoders(int driveSpeed, int encoderTicks); //driveSpeed is a constant, encoder ticks corresponds to the distance you want to travel. **1000 encoder ticks makes for about 15.5" or 39.4cm
 
 */
 
@@ -36,7 +18,7 @@ void moveToPosn(Servo serv0, int servo_pin, int initial, int final, bool hardSta
 
   //Checks to make sure the servo is attached
   if (serv0.attached() == false) {
-  //  serv0.attach(servo_pin);
+    //  serv0.attach(servo_pin);
   }
 
   //If the position must start at the initial mark
@@ -121,6 +103,33 @@ void driveStraightAheadEncoders(int driveSpeed, int encoderTicks) {
   stopDrive();
 }
 
+void turnTurntableEncodersPosition(int encoderPosition) {
+  if ((encoder_turntable_motor.getRawPosition() - encoderPosition) < 0) {
+    while ((encoder_turntable_motor.getRawPosition() - encoderPosition) < 0) {
+      servo_turntable_motor.writeMicroseconds(1600);
+    }
+  }
+  else {
+    while ((encoder_turntable_motor.getRawPosition() - encoderPosition) > 0) {
+      servo_turntable_motor.writeMicroseconds(1400);
+    }
+  }
+  stopTurntable();
+}
+
+void armEncoderPosition(int encoderPosition){
+  if ((encoder_arm_motor.getRawPosition() - encoderPosition) < 0) {
+    while ((encoder_arm_motor.getRawPosition() - encoderPosition) < 0) {
+      servo_arm_motor.writeMicroseconds(1600);
+    }
+  }
+  else {
+    while ((encoder_arm_motor.getRawPosition() - encoderPosition) > 0) {
+      servo_arm_motor.writeMicroseconds(1400);
+    }
+  }
+  stopArm();
+}
 
 // call this function to follow a wall. Example followWall(R, 15, 1600) will follow a wall on the right side, maintaining a distance of 15cm, at a speed of 1600
 void followWall(int driveSpeed, char wallSide, int desiredDistance) {
@@ -224,6 +233,12 @@ void followWall(int driveSpeed, char wallSide, int desiredDistance) {
 void stopDrive() {
   servo_rightMotor.writeMicroseconds(1500);
   servo_leftMotor.writeMicroseconds(1500);
+}
+void stopTurntable() {
+  servo_turntable_motor.writeMicroseconds(1500);
+}
+void stopArm() {
+  servo_arm_motor.writeMicroseconds(1500);
 }
 void driveStraight(int driveSpeed) {
   servo_rightMotor.writeMicroseconds(driveSpeed);
