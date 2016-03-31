@@ -2,7 +2,7 @@
 
 Servo tt_servo, e_servo, w_servo, m_servo;
 //Turntable (tt) xy plane. Elbow (e) xyz space, Wrist (w) xyz, Magnet (m) xyz space
-int delayBy = 10; //Works as low as 2 (for speed).
+int timeDiff = 10; //Works as low as 2 (for speed).
 
 //Arbitrary servo Pins - can be changed manually
 const int tt_servoPin = 7;
@@ -53,7 +53,6 @@ void loop() {
   moveToPosn(m_servo, 0, 110, 0);
   /* Passes the servo object, initial position,
   final position, bool of whether to enforce the initial position */
-  delay(500); //REMOVE later
   moveToPosn(110, 0, 0);
 
   //moveToPosnByInc(0, 180, 3, 1);
@@ -67,34 +66,11 @@ void loop() {
 
 }
 
-void moveToPosnByInc(int initial, int final, int increment, bool hardStartTrue) {
-  //If the position must start at the initial mark
-  if (hardStartTrue == true) {
-    while (serv0.read() != initial) {
-      serv0.write(initial);
-    }
-  }
-
-  if (initial > final) {
-    while (serv0.read() > final) {
-      serv0.write(serv0.read() - increment);
-      delay(delayBy);
-    }
-  }
-  else if (initial < final) {
-    while (serv0.read() < final) {
-      serv0.write(serv0.read() + increment);
-      delay(delayBy);
-    }
-  }
-
-}
-
-
-
-
 
 void moveToPosn(Servo serv0, int initial, int final, bool hardStartTrue) {
+
+  int current = millis(); //current time
+  int previous = current;
 
   //Checks to make sure the servo is attached
   /*if (serv0.attached() == false) {
@@ -105,34 +81,28 @@ void moveToPosn(Servo serv0, int initial, int final, bool hardStartTrue) {
   if (hardStartTrue == true) {
     Serial.println("Hard Start");
     while (serv0.read() != initial) {
-      serv0.write(initial);
-      delay(delayBy);
+      if ((current - previous) >= timeDiff) {
+        serv0.write(initial);
+        previous = current;
+      }
+
     }
   }
 
-  /*
-  //Need to rewrite using time differences, not delays.
-    while (serv0.read() != final) {
-      Serial.println("Movement - MTP");
-      while (serv0.read() > final) {
-        serv0.write(serv0.read() - 1);
-        delay(delayBy);
-      }
-      while (serv0.read() < final) {
-        serv0.write(serv0.read() + 1);
-        delay(delayBy);
-      }
-      Serial.print("Status: "); Serial.println(serv0.read());
-
-    }
-  */
-
-  int current = millis(); //current time
-  int previous = current;
-
   while (serv0.read() != final) {
-    if (
-    
+
+
+    if ((current - previous) >= timeDiff) {
+      if (serv0.read() > final) {
+        serv0.write(serv0.read() - 1);
+      }
+      if (serv0.read() < final) {
+        serv0.write(serv0.read() + 1);
+      }
+      previous = current;
+    }
+
+
     current = millis();
   }
 
