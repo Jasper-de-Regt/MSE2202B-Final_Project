@@ -54,6 +54,7 @@ const int ci_arm_modetwo_dropoff = ;             //  "
 const int ci_wrist_modetwo_dropoff = ;           //  "
 const int ci_arm_wall_tesseract_scan = ;         //  "
 const int ci_wrist_wall_tesseract_scan = ;       //  "
+
 boolean bt_IRcrown_detection = ;                 //  "
 
 long l_turntable_motor_position;
@@ -74,7 +75,7 @@ void setup() {
   encoder_arm_motor.init(1.0 / 3.0 * MOTOR_393_SPEED_ROTATIONS, MOTOR_393_TIME_DELTA);
   encoder_arm_motor.setReversed(true);  // adjust for positive count when turning clockwise
 
-  encoder_turntable_motor.zero();
+  encoder_turntable_motor.zero();       //Robot arm must be positioned on the standoffs to be properly zeroed
   encoder_arm_motor.zero();
 }
 
@@ -88,6 +89,14 @@ void loop() {
   Serial.print(", Arm: ");
   Serial.println(l_arm_motor_position );
 #endif
+
+if(bt_IRcrown_detection==true){
+  stopDrive();
+  driveStraightAheadEncoders(1400,130);
+}
+else continue;
+
+
 }
 
 
