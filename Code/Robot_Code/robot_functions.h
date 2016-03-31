@@ -1,7 +1,6 @@
 #ifndef robot_functions
 #define robot_functions
 
-
 /* Function List + How to Call
 
 Arm Servo functions
@@ -28,6 +27,7 @@ void skidsteerNinetyRight(int driveSpeed); // driveSpeed will be a constant as d
 void skidsteerNinetyLeft(int driveSpeed) // Same note as above
 
 
+
 */
 
 void moveToPosn(Servo serv0, int servo_pin, int initial, int final, bool hardStartTrue) {
@@ -37,7 +37,7 @@ void moveToPosn(Servo serv0, int servo_pin, int initial, int final, bool hardSta
 
   //Checks to make sure the servo is attached
   if (serv0.attached() == false) {
-  //  serv0.attach(servo_pin);
+    //  serv0.attach(servo_pin);
   }
 
   //If the position must start at the initial mark
@@ -122,6 +122,51 @@ void driveStraightAheadEncoders(int driveSpeed, int encoderTicks) {
   stopDrive();
 }
 
+//moves turntable to desired position
+void turnTurntableEncodersPosition(int encoderPosition) {
+  if ((encoder_turntable_motor.getRawPosition() - encoderPosition) < 0) {
+    while ((encoder_turntable_motor.getRawPosition() - encoderPosition) < 0) {
+      servo_turntable_motor.writeMicroseconds(1600);
+    }
+  }
+  else {
+    while ((encoder_turntable_motor.getRawPosition() - encoderPosition) > 0) {
+      servo_turntable_motor.writeMicroseconds(1400);
+    }
+  }
+  stopTurntable();
+}
+
+//moves arm to desired position
+void armEncoderPosition(int encoderPosition) {
+  if ((encoder_arm_motor.getRawPosition() - encoderPosition) < 0) {
+    while ((encoder_arm_motor.getRawPosition() - encoderPosition) < 0) {
+      servo_arm_motor.writeMicroseconds(1600);
+    }
+  }
+  else {
+    while ((encoder_arm_motor.getRawPosition() - encoderPosition) > 0) {
+      servo_arm_motor.writeMicroseconds(1400);
+    }
+  }
+  stopArm();
+}
+
+
+int hallEffectMeasurement(){
+  return analogRead(ci_hall_effect); //Range: 0-1024
+}
+
+// scans for fluctuating magnetic field to see if there is a magnetic tesseract, return true if true
+void tesseractScanSweep(int maxPosition) {
+  for(int i=encoder_turntable_motor.getRawPosition(); i<maxPosition; i+10){
+  turnTurntableEncodersPosition(i);
+  if(/*hallEffectMeasurement*/){       //checks to see if there is an abnormality in the hall effects analog read, if yes then break the loop
+    break;
+    }
+  
+  }
+}
 
 // call this function to follow a wall. Example followWall(R, 15, 1600) will follow a wall on the right side, maintaining a distance of 15cm, at a speed of 1600
 void followWall(int driveSpeed, char wallSide, int desiredDistance) {
@@ -225,6 +270,12 @@ void followWall(int driveSpeed, char wallSide, int desiredDistance) {
 void stopDrive() {
   servo_rightMotor.writeMicroseconds(1500);
   servo_leftMotor.writeMicroseconds(1500);
+}
+void stopTurntable() {
+  servo_turntable_motor.writeMicroseconds(1500);
+}
+void stopArm() {
+  servo_arm_motor.writeMicroseconds(1500);
 }
 void driveStraight(int driveSpeed) {
   servo_rightMotor.writeMicroseconds(driveSpeed);
