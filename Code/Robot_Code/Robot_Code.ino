@@ -38,7 +38,7 @@ const int ci_arm_modetwo_dropoff = ;             //  "
 const int ci_wrist_modetwo_dropoff = ;           //  "
 const int ci_arm_wall_tesseract_scan = ;         //  "
 const int ci_wrist_wall_tesseract_scan = ;       //  "
-
+boolean bt_IRcrown_detection = ;                 //  "
 
 long l_turntable_motor_position;
 long l_arm_motor_position;
