@@ -7,7 +7,7 @@
 
 
 Servo servo_turntable_motor;
-Servo servo_elbow_motor;
+Servo servo_arm_motor;
 Servo servo_wrist_motor;
 Servo servo_magnet_motor;
 
@@ -25,10 +25,11 @@ const int ci_I2C_SDA = A4;         // I2C data = white
 const int ci_I2C_SCL = A5;         // I2C clock = yellow
 
 //Position constants
-const int ci_turntable_left_position = 400;     // Experiment to determine appropriate value
+const int ci_turntable_left_position = 400;      // Experiment to determine appropriate value
 const int ci_turntable_middle_position = 980;    //  "
 const int ci_turntable_right_position = 1540;    //  "
-const int ci_arm_vertical_position = 0;         //  "
+const int ci_arm_vertical_position = 0;          //  "
+const int ci_arm_half_position = 200;            //  "
 const int ci_arm_extended_position = 400;        //  "
 
 long l_turntable_motor_position;
@@ -65,15 +66,5 @@ void loop() {
 #endif
 }
 
-
-void setup() {
-  // put your setup code here, to run once:
-
-}
-
-void loop() {
-  // put your main code here, to run repeatedly:
-
-}
 
 
