@@ -1,6 +1,13 @@
 #ifndef robot_functions
 #define robot_functions
 
+/* Function List + How to Call
+
+moveToPosn(servo, servo pin, initial posn, final posn, bool to start at initial);
+
+*/
+
+
 
 void moveToPosn(Servo serv0, int servo_pin, int initial, int final, bool hardStartTrue) {
 

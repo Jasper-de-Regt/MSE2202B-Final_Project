@@ -5,6 +5,17 @@
 #include <Wire.h>
 #include <I2CEncoder.h>
 
+/*
+Naming conventions:
+
+*camelcase
+- E.g. itLooksLikeThis
+
+*significant words in the title should be separated by underscores "_"
+- E.g. motor_pin_one
+
+*/
+
 
 Servo servo_turntable_motor;
 Servo servo_elbow_motor;
