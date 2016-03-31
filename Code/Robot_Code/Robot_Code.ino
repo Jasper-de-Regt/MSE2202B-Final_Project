@@ -90,13 +90,17 @@ void loop() {
   Serial.println(l_arm_motor_position );
 #endif
 
-if(bt_IRcrown_detection==true){
+//assuming the driving code is above
+
+if(bt_IRcrown_detection==true){  // if tesseract detected
   stopDrive();
-  driveStraightAheadEncoders(1400,130);
+driveStraightAheadEncoders(1400,130); // back up 2in
+armEncoderPosition(ci_arm_half_position); // raise arm to an angle of 45 degrees
+turnTurntableEncodersPosition(ci_turntable_left_position); // move turntable arm to the leftmost extremity
+
 }
+
 else continue;
-
-
 }
 
 
