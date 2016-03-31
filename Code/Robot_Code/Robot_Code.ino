@@ -90,6 +90,60 @@ void loop() {
   Serial.println(l_arm_motor_position );
 #endif
 
+/***************************************************************************************************************************/
+/*                                               MODE 1                                                                    */
+/***************************************************************************************************************************/
+
+
+/*
+Logic
+
+Calibrated (sensors, servos)? If no, calibrate. If yes, proceed.
+
+Drive
+
+If a wall has been detected in front of the device
+  Turn 90 (alternating right and left) -> keep a counter
+  Then turn another 90 degrees (same direction)
+  Resume driving
+
+If the IR sensor has been tripped,
+  stop driving
+  Drive backward 2" (130 encoder ticks)
+  stop driving
+  Move the arm to the left side
+  Lower the wrist
+  Sweep the arm from side to side while reading from the Hall Effect sensor
+  
+  If a Hall Effect sensor detects a large enough change, record the encoder position of the turntable servo motor
+    move the turntable servo motor back to that position
+  
+  If after 1 sweep, the Hall Effect sensor doesn't detect a change
+    Move the turntable servo to the left position
+    Lower the arm servo (a.k.a. "elbow") so that the end effector is low to the ground
+    Move the turntable servo to the right position (to sweep the bad tesseract out of the way)
+  ELSE If the Hall Effect sensor detects a large enough change
+    Lower the magnet servo to lower the magnet -> picking up the tesseract
+    Raise the wrist servo so the end effector support bar is parallel to the ground
+    Drive back to the origin //Need to fully define logic how to do that
+    Rotate the arm to the side of the device (logic determines which side to move to)
+    Drive forward slowly (toward the corner of the arena)
+    Scan with the IR sensor on the arm 
+    
+    If the analog reading is defined in the range of an empty space (after reading 1 tape value) *calibrated values
+      stop driving
+      Raise the arm (elbow) ~30 degrees
+      Lower the wrist so it hangs vertically
+      Raise the magnet servo to raise the magnet -> releases servo
+      Raise the wrist so the IR sensor is parallel with the ground
+      Drive back to the origin (reverse drive?)
+
+//NEW CYCLE
+  
+  
+
+*/
+
 if(bt_IRcrown_detection==true){
   stopDrive();
   driveStraightAheadEncoders(1400,130);
