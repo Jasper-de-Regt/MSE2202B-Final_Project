@@ -30,7 +30,7 @@ void setup() {
   m_servo.write(0);
   w_servo.write(0);
 
-
+tt_servo.pin();
   //Serial.println(serv0.read());
 
   /*
@@ -65,7 +65,6 @@ void loop() {
   //serv0.detach(); Serial.println("Detached");
 
 }
-
 
 void moveToPosn(Servo serv0, int initial, int final, bool hardStartTrue) {
 
