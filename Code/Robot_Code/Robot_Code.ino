@@ -113,7 +113,11 @@ if(bt_IRcrown_detection==true){  // if tesseract detected
   stopDrive();
 driveStraightAheadEncoders(1400,130); // back up 2in
 armEncoderPosition(ci_arm_half_position); // raise arm to an angle of 45 degrees
+<<<<<<< HEAD
+turnTurntableEncodersPosition(ci_turntable_left_position); // move turntable arm to the leftmost extremity
+=======
 turnTurntableEncodersPosition(ci_turntable_left_position); // move turntable arm to the leftmost extremity 
+>>>>>>> refs/remotes/origin/Michael-Henderson-branch
 
 }
 
