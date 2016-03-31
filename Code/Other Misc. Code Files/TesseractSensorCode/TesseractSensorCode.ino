@@ -2,14 +2,14 @@
 
 const unsigned int sensorHalfDelta = 130;
 
-const int numberOfSensors = 2;
+const int numberOfSensors = 10;
 const int eepromAddress[16] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15};
 unsigned int thresholdValues[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
 // pin constants
 const unsigned int analogPins[16] = {A0, A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15};
-const unsigned int tesseractDetectedPin = 13;
-const unsigned int buttonPin = 14;
+const unsigned int tesseractDetectedPin = 52;
+const unsigned int buttonPin = 8;
 const unsigned int ledPin = 13;
 
 
@@ -46,7 +46,8 @@ void loop() {
   // put your main code here, to run repeatedly:
   tesseractDetected = false;                                  // initial condition
   readSensors();                                              // this function reads all the sensors and sets tesseractDetected to true if a sensor detects a tesseract
-  digitalWrite(tesseractDetectedPin, tesseractDetected);      // if a tesseract was found, this will set tesseractDetectedPin to HIGH.
+  digitalWrite(tesseractDetectedPin, !tesseractDetected);      // if a tesseract was found, this will set tesseractDetectedPin to LOW.
+  digitalWrite(ledPin, !tesseractDetected);                     // if a tesseract was found, this will turn the led off
 }
 
 

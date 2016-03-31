@@ -4,10 +4,26 @@
 #include <CharliePlexM.h>
 #include <Wire.h>
 #include <I2CEncoder.h>
+#include "robot_functions.h" //this is our header file
+
+/*
+Naming conventions:
+
+*camelcase
+- E.g. itLooksLikeThis
+
+*significant words in the title should be separated by underscores "_"
+- E.g. motor_pin_one
+
+*CAPITALIZE ACRONYMS
+- E.g. IR instead of infrared.
+       LED instead of light_emitting_diode or lightEmittingDiode
+
+*/
 
 
 Servo servo_turntable_motor;
-Servo servo_elbow_motor;
+Servo servo_arm_motor;
 Servo servo_wrist_motor;
 Servo servo_magnet_motor;
 
@@ -25,11 +41,21 @@ const int ci_I2C_SDA = A4;         // I2C data = white
 const int ci_I2C_SCL = A5;         // I2C clock = yellow
 
 //Position constants
-const int ci_turntable_left_position = 400;     // Experiment to determine appropriate value
+const int ci_turntable_default_position = 0;     //  Experiment to determine appropriate value
+const int ci_turntable_left_position = 400;      //  "
 const int ci_turntable_middle_position = 980;    //  "
 const int ci_turntable_right_position = 1540;    //  "
-const int ci_arm_vertical_position = 0;         //  "
-const int ci_arm_extended_position = 400;        //  "
+const int ci_arm_vertical_position = 0;          //  "
+const int ci_arm_half_position = 200;            //  "
+const int ci_arm_horizontal_position = 400;      //  "
+const int ci_arm_wall_line_scan = 0;             //  "
+const int ci_wrist_wall_line_scan = ;            //  "
+const int ci_arm_modetwo_dropoff = ;             //  "
+const int ci_wrist_modetwo_dropoff = ;           //  "
+const int ci_arm_wall_tesseract_scan = ;         //  "
+const int ci_wrist_wall_tesseract_scan = ;       //  "
+
+boolean bt_IRcrown_detection = ;                 //  "
 
 long l_turntable_motor_position;
 long l_arm_motor_position;
@@ -49,7 +75,7 @@ void setup() {
   encoder_arm_motor.init(1.0 / 3.0 * MOTOR_393_SPEED_ROTATIONS, MOTOR_393_TIME_DELTA);
   encoder_arm_motor.setReversed(true);  // adjust for positive count when turning clockwise
 
-  encoder_turntable_motor.zero();
+  encoder_turntable_motor.zero();       //Robot arm must be positioned on the standoffs to be properly zeroed
   encoder_arm_motor.zero();
 }
 
@@ -63,58 +89,15 @@ void loop() {
   Serial.print(", Arm: ");
   Serial.println(l_arm_motor_position );
 #endif
+
+if(bt_IRcrown_detection==true){
+  stopDrive();
+  driveStraightAheadEncoders(1400,130);
+}
+else continue;
+
+
 }
 
 
-void setup() {
-  // put your setup code here, to run once:
 
-}
-
-void loop() {
-  // put your main code here, to run repeatedly:
-
-}
-
-
-void moveToPosn(Servo serv0, int initial, int final, bool hardStartTrue) {
-
-  int current = millis(); //current time
-  int previous = current;
-
-  //Checks to make sure the servo is attached
-  /*if (serv0.attached() == false) {
-  //  serv0.attach(servoPin1);
-  }*/
-
-  //If the position must start at the initial mark
-  if (hardStartTrue == true) {
-    Serial.println("Hard Start");
-    while (serv0.read() != initial) {
-      if ((current - previous) >= timeDiff) {
-        serv0.write(initial);
-        previous = current;
-      }
-
-    }
-  }
-
-  while (serv0.read() != final) {
-
-
-    if ((current - previous) >= timeDiff) {
-      if (serv0.read() > final) {
-        serv0.write(serv0.read() - 1);
-      }
-      if (serv0.read() < final) {
-        serv0.write(serv0.read() + 1);
-      }
-      previous = current;
-    }
-
-
-    current = millis();
-  }
-
-
-}
