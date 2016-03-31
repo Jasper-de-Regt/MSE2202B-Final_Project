@@ -103,6 +103,7 @@ void driveStraightAheadEncoders(int driveSpeed, int encoderTicks) {
   stopDrive();
 }
 
+//moves turntable to desired position
 void turnTurntableEncodersPosition(int encoderPosition) {
   if ((encoder_turntable_motor.getRawPosition() - encoderPosition) < 0) {
     while ((encoder_turntable_motor.getRawPosition() - encoderPosition) < 0) {
@@ -115,6 +116,34 @@ void turnTurntableEncodersPosition(int encoderPosition) {
     }
   }
   stopTurntable();
+}
+
+//moves arm to desired position
+void armEncoderPosition(int encoderPosition) {
+  if ((encoder_arm_motor.getRawPosition() - encoderPosition) < 0) {
+    while ((encoder_arm_motor.getRawPosition() - encoderPosition) < 0) {
+      servo_arm_motor.writeMicroseconds(1600);
+    }
+  }
+  else {
+    while ((encoder_arm_motor.getRawPosition() - encoderPosition) > 0) {
+      servo_arm_motor.writeMicroseconds(1400);
+    }
+  }
+  stopArm();
+}
+
+void measureHallEffect(){
+  int raw=analogRead()
+}
+
+// scans for fluctuating magnetic field to see if there is a magnetic tesseract, return true if true
+void tesseractScanSweep(int maxPosition) {
+  for(int i=encoder_turntable_motor.getRawPosition(); i<maxPosition; i+10){
+  turnTurntableEncodersPosition(i);
+  //if(hall effect gets funky){}
+  //break;
+  }
 }
 
 // call this function to follow a wall. Example followWall(R, 15, 1600) will follow a wall on the right side, maintaining a distance of 15cm, at a speed of 1600
