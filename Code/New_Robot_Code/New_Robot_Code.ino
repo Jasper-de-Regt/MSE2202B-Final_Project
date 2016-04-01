@@ -74,8 +74,8 @@ const int ci_wrist_position_horizontal = 0;  //  " Wrist bar is parallel to the 
 const int ci_wrist_modetwo_dropoff = 0;      //  "
 
 //Magnet servo positions
-const int ci_magnet_up_position = 0; // Cant pickup tesseracts
-const int ci_magnet_down_position = 0; //Will pickup tesseracts
+const int ci_magnet_up_position = 157; // Cant pickup tesseracts
+const int ci_magnet_down_position = 7; //Will pickup tesseracts
 
 boolean bt_IRcrown_detection;                 //  " logic is backwards ie. false is positive and true is negative
 //bt_IRcrown_detection=digitalRead(ci_IR_crown); //I think
