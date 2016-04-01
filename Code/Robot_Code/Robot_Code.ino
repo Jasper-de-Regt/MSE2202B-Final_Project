@@ -9,15 +9,15 @@
 /*
 Naming conventions:
 
-*camelcase for function
+*camelcase
 - E.g. itLooksLikeThis
 
-*significant words in the title should be separated by underscores "_" **for variables
+*significant words in the title should be separated by underscores "_"
 - E.g. motor_pin_one
 
 *CAPITALIZE ACRONYMS
 - E.g. IR instead of infrared.
-       LED instead of light_emitting_diode (variable) or lightEmittingDiode (function)
+       LED instead of light_emitting_diode or lightEmittingDiode
 
 */
 
@@ -36,15 +36,15 @@ I2CEncoder encoder_arm_motor;
 
 //port pin constants
 
-const int ci_turntable_motor = 10;
-const int ci_arm_motor = 11;
-const int ci_hall_effect = 6;
+const int ci_turntable_motor = 11 ;
+const int ci_arm_motor = 10;
+const int ci_hall_effect = A3;
 const int ci_right_motor = 8;
 const int ci_left_motor = 9;
 const int ci_wrist_servo = 5;
-const int ci_IR_crown=7;    //High when no tesseract, low when tesseract
+const int ci_IR_crown = 7;  //High when no tesseract, low when tesseract
 const int ci_magnet_servo = 4;
-const int ci_arm_linetracker = 3;
+const int ci_arm_linetracker = A2;
 const int ci_I2C_SDA = A4;         // I2C data = white
 const int ci_I2C_SCL = A5;         // I2C clock = yellow
 
@@ -53,22 +53,32 @@ const int ci_turntable_default_position = 0;     //  Experiment to determine app
 const int ci_turntable_left_position = 400;      //  "
 const int ci_turntable_middle_position = 980;    //  "
 const int ci_turntable_right_position = 1540;    //  "
-const int ci_arm_vertical_position = 0;          //  "
+const int ci_arm_vertical_position = 400;          //  "
 const int ci_arm_half_position = 200;            //  "
-const int ci_arm_horizontal_position = 400;      //  "
+const int ci_arm_horizontal_position = 0;      //  "
 const int ci_arm_wall_line_scan = 0;             //  "
 const int ci_wrist_wall_line_scan = ;            //  "
 const int ci_arm_modetwo_dropoff = ;             //  "
 const int ci_wrist_modetwo_dropoff = ;           //  "
 const int ci_arm_wall_tesseract_scan = ;         //  "
 const int ci_wrist_wall_tesseract_scan = ;       //  "
+
+const int ci_magnet_up_position = ;
+const int ci_magnet_down_position = ;
+boolean bt_IRcrown_detection = true;                 //  " logic is backwards ie. false is positive and true is negative
+
 const int ci_wrist_position_perpendicular = ;    //  " Wrist bar is perpendicular to the arm.
 const int ci_wrist_position_parallel = ;         //  " Wrist bar is parallel to the arm.
 
-boolean bt_IRcrown_detection = ;                 //  "
+const double cd_robot_diameter = 23.42;          //  Radius of the device ~ 23.42 mm
+char ch_tracking_direction = 'R';                //  Character value is either 'R', 'L', 'l' or 'r'
+
+
 
 long l_turntable_motor_position;
 long l_arm_motor_position;
+
+unsigned int ui_num_turns = 0;
 
 const int ci_drive_speed = 1600;
 
@@ -86,13 +96,13 @@ void setup() {
   // starting with the encoder directly attached to the arduino
   encoder_leftMotor.init(1.0 / 3.0 * MOTOR_393_SPEED_ROTATIONS, MOTOR_393_TIME_DELTA);
   encoder_leftMotor.setReversed(false);  // adjust for positive count when moving forward
-  
+
   encoder_rightMotor.init(1.0 / 3.0 * MOTOR_393_SPEED_ROTATIONS, MOTOR_393_TIME_DELTA);
   encoder_rightMotor.setReversed(true);  // adjust for positive count when moving forward
-  
+
   encoder_turntable_motor.init(1.0 / 3.0 * MOTOR_393_SPEED_ROTATIONS, MOTOR_393_TIME_DELTA);
   encoder_turntable_motor.setReversed(false);  // adjust for positive count when moving forward
-  
+
   encoder_arm_motor.init(1.0 / 3.0 * MOTOR_393_SPEED_ROTATIONS, MOTOR_393_TIME_DELTA);
   encoder_arm_motor.setReversed(true);  // adjust for positive count when turning clockwise
 
@@ -111,7 +121,7 @@ void loop() {
   Serial.println(l_arm_motor_position );
 #endif
 
-<<<<<<< HEAD
+
   /***************************************************************************************************************************/
   /*                                               MODE 1                                                                    */
   /***************************************************************************************************************************/
@@ -123,8 +133,15 @@ void loop() {
   Calibrated (sensors, servos)? If no, calibrate. If yes, proceed.
 
   Drive
+    If the bot hasn't turned 180 yet, drive straight just using encoders
+    Else If the bot has turned more than 0 180 degree turns, follow wall -> set distance as (1/3) diameter + (num turns - 1)*diameter
+      If numTurns % 2 == 1 (odd)
+        use the right ultrasonic sensors
+      Else If numTurns % 2 == 0 (even)
+        use the left ultrasonic sensors
 
   If a wall has been detected in front of the device
+    Stop driving
     Turn 90 (alternating right and left) -> keep a counter
     Then turn another 90 degrees (same direction)
     Resume driving
@@ -167,34 +184,59 @@ void loop() {
   */
 
 
-  //May just use
-  //followWall(ci_drive_speed,'L', 5); //Drives with keeping the left ultrasonic sensor 5 cm from the wall
-  driveStraightAheadEncoders(ci_drive_speed, 7736); //Encoder tickers corresponds to 10 ft. May get interrupted by a sensor getting tripped.
-  
-  //If proximity to wall is <= 5 cm AND the wrist servo is 
-  if ((ui_front_distance_reading <= 5) && (servo_wrist_motor.read() >= ci_wrist_parallel)) {
-    skidsteerNinetyRight(ci_drive_speed);
+  if (ui_num_turns == 0) { //If the robot has yet to turn
+    driveStraightAheadEncoders(ci_drive_speed, 7736); //Encoder tickers corresponds to 10 ft. May get interrupted by a sensor getting tripped or some other condition.
   }
+  else if (ui_num_turns > 0) {
+    if ((ui_num_turns % 2) == 1) {
+      ch_tracking_direction = 'R';
+    }
+    else if ((ui_num_turns % 2) == 0) {
+      ch_tracking_direction = 'L';
+    }
+
+    // Follow the wall from the tracking direction that corresponds to the number of turns
+    followWall(ci_drive_speed, ch_tracking_direction , ((cd_robot_diameter / 3) + cd_robot_diameter * (ui_num_turns - 1)) ); //Sets the bot to follow the wall on the right hand side
+
+    //If proximity to wall is <= 8 cm AND the wrist bar is parallel to the ground
+
+    //The ultrasonic sensor isn't reliable below 7 cm
+    if ((ui_front_distance_reading <= 8) && (servo_wrist_motor.read() >= ci_wrist_parallel)) {
+      //Do a sweep
+      //
+      //
+      //
+      //
+      if ((ch_tracking_direction == 'L') || (ch_tracking_direction == 'l')) {
+        skidsteerNinetyLeft(ci_drive_speed);
+        skidsteerNinetyLeft(ci_drive_speed);
+      }
+      else if ((ch_tracking_direction == 'R') || (ch_tracking_direction == 'r')) {
+        skidsteerNinetyRight(ci_drive_speed);
+        skidsteerNinetyRight(ci_drive_speed);
+      }
+    }
+    
+    
+
+    //*********************************************MIKE'S CODE************************************************************************
+    //*********************************************REMOVE THIS PARTITION LATER********************************************************
+    //********************************************************************************************************************************
 
 
-
-  if (bt_IRcrown_detection == true) {
+  if (bt_IRcrown_detection == true) { // if tesseract detected
     stopDrive();
-    driveStraightAheadEncoders(1400, 130);
+    driveStraightAheadEncoders(1400, 130); // back up 2in
+    armEncoderPosition(ci_arm_half_position); // raise arm to an angle of 45 degrees
+    turnTurntableEncodersPosition(ci_turntable_left_position); // move turntable arm to the leftmost extremity
+    armEncoderPosition(ci_arm_horizontal_position); // raise arm to an angle of 45 degrees
+    tesseractScanSweep(ci_turntable_right_position);
+    armEncoderPosition(ci_arm_half_position);
+    turnTurntableEncodersPosition(ci_turntable_middle_position);
   }
   else continue;
-=======
-//assuming the driving code is above
 
-if(bt_IRcrown_detection==true){  // if tesseract detected
-  stopDrive();
-driveStraightAheadEncoders(1400,130); // back up 2in
-armEncoderPosition(ci_arm_half_position); // raise arm to an angle of 45 degrees
-turnTurntableEncodersPosition(ci_turntable_left_position); // move turntable arm to the leftmost extremity 
 
-}
-
-else continue;
 }
 
 
