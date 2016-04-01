@@ -3,30 +3,11 @@
 
 /* Function List + How to Call
 
-Arm Servo functions
-void moveToPosn(servo, servo pin, initial posn, final posn, bool to start at initial);
-
-
-Driving functions
-void stopDrive(); //Stops the motors
-void driveStraight(int driveSpeed); //Sets both motors at the same speed
-void driveStraightAheadEncoders(int driveSpeed, int encoderTicks); //driveSpeed is a constant, encoder ticks corresponds to the distance you want to travel. **1000 encoder ticks makes for about 15.5" or 39.4cm
-
-
-Wall-Following functions
-void followWall(int driveSpeed, char wallSide, int desiredDistance); // call to follow a wall. Example followWall(1600, R, 15) will follow a wall on the right side, maintaining a distance of 15cm, at a speed of 1600
-void moveFurtherFromWall(int driveSpeed, char wallSide); //wallSide should be either R or L (capital or lowercase)
-
-
-Turning functions
-void turnRight(int driveSpeed, int speedModifier); //driveSpeed is const. speedModifier is added/subtracted from left/right respectively.
-void turnRightSharp(int driveSpeed, int speedModifier); //similar to turnRight(), but speedModifier is multiplied by 1.5
-void turnLeft(int driveSpeed, int speedModifier); //driveSpeed is const. speedModifier is added/subtracted from right/left respectively.
-void turnLeftSharp(int driveSpeed, int speedModifier); //similar to turnLeft(), but speedModifier is multiplied by 1.5
-void skidsteerNinetyRight(int driveSpeed); // driveSpeed will be a constant as defined in the main code 
-void skidsteerNinetyLeft(int driveSpeed) // Same note as above
-
-
+  void moveToPosn(servo, servo pin, initial posn, final posn, bool to start at initial);
+  void moveFurtherFromWall(int driveSpeed, char wallSide); //wallSide should be either R or L (capital or lowercase)
+  void skidsteerNinetyRight(int driveSpeed); // driveSpeed will be a constant as defined in the main code
+  void skidsteerNinetyLeft(int driveSpeed) // Same note as above
+  void driveStraightAheadEncoders(int driveSpeed, int encoderTicks); //driveSpeed is a constant, encoder ticks corresponds to the distance you want to travel. **1000 encoder ticks makes for about 15.5" or 39.4cm
 
 */
 
@@ -60,7 +41,7 @@ void moveToPosn(Servo serv0, int servo_pin, int initial, int final, bool hardSta
       }
       if (serv0.read() < final) {
         serv0.write(serv0.read() + 1);
-      }
+      } 
       previous = current;
     }
 
@@ -152,19 +133,17 @@ void armEncoderPosition(int encoderPosition) {
   stopArm();
 }
 
-
-int hallEffectMeasurement(){
+int hallEffectMeasurement() {
   return analogRead(ci_hall_effect); //Range: 0-1024
 }
 
 // scans for fluctuating magnetic field to see if there is a magnetic tesseract, return true if true
 void tesseractScanSweep(int maxPosition) {
-  for(int i=encoder_turntable_motor.getRawPosition(); i<maxPosition; i+10){
-  turnTurntableEncodersPosition(i);
-  if(/*hallEffectMeasurement*/){       //checks to see if there is an abnormality in the hall effects analog read, if yes then break the loop
-    break;
+  for (int i = encoder_turntable_motor.getRawPosition(); i < maxPosition; i + 30) { // not sure if this is the best way to scan
+    turnTurntableEncodersPosition(i);
+    if (/*hallEffectMeasurement*/) {     //checks to see if there is an abnormality in the hall effects analog read, if yes then break the loop
+      break;
     }
-  
   }
 }
 
@@ -297,8 +276,5 @@ void turnLeftSharp(int driveSpeed, int speedModifier) {
   servo_rightMotor.writeMicroseconds(driveSpeed + speedModifier * 1.5);
   servo_leftMotor.writeMicroseconds(driveSpeed - speedModifier * 1.5);
 }
-
-
-
 
 #endif
