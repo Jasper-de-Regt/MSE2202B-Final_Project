@@ -9,15 +9,15 @@
 /*
 Naming conventions:
 
-*camelcase for function
+*camelcase
 - E.g. itLooksLikeThis
 
-*significant words in the title should be separated by underscores "_" **for variables
+*significant words in the title should be separated by underscores "_"
 - E.g. motor_pin_one
 
 *CAPITALIZE ACRONYMS
 - E.g. IR instead of infrared.
-       LED instead of light_emitting_diode (variable) or lightEmittingDiode (function)
+       LED instead of light_emitting_diode or lightEmittingDiode
 
 */
 
@@ -36,15 +36,15 @@ I2CEncoder encoder_arm_motor;
 
 //port pin constants
 
-const int ci_turntable_motor = 10;
-const int ci_arm_motor = 11;
-const int ci_hall_effect = 6;
+const int ci_turntable_motor = 11 ;
+const int ci_arm_motor = 10;
+const int ci_hall_effect = A3;
 const int ci_right_motor = 8;
 const int ci_left_motor = 9;
 const int ci_wrist_servo = 5;
 const int ci_IR_crown=7;    //High when no tesseract, low when tesseract
 const int ci_magnet_servo = 4;
-const int ci_arm_linetracker = 3;
+const int ci_arm_linetracker = A2;
 const int ci_I2C_SDA = A4;         // I2C data = white
 const int ci_I2C_SCL = A5;         // I2C clock = yellow
 
@@ -53,24 +53,21 @@ const int ci_turntable_default_position = 0;     //  Experiment to determine app
 const int ci_turntable_left_position = 400;      //  "
 const int ci_turntable_middle_position = 980;    //  "
 const int ci_turntable_right_position = 1540;    //  "
-const int ci_arm_vertical_position = 0;          //  "
+const int ci_arm_vertical_position = 400;          //  "
 const int ci_arm_half_position = 200;            //  "
-const int ci_arm_horizontal_position = 400;      //  "
+const int ci_arm_horizontal_position = 0;      //  "
 const int ci_arm_wall_line_scan = 0;             //  "
 const int ci_wrist_wall_line_scan = ;            //  "
 const int ci_arm_modetwo_dropoff = ;             //  "
 const int ci_wrist_modetwo_dropoff = ;           //  "
 const int ci_arm_wall_tesseract_scan = ;         //  "
 const int ci_wrist_wall_tesseract_scan = ;       //  "
-const int ci_wrist_position_perpendicular = ;    //  " Wrist bar is perpendicular to the arm.
-const int ci_wrist_position_parallel = ;         //  " Wrist bar is parallel to the arm.
-
-boolean bt_IRcrown_detection = ;                 //  "
+const int ci_magnet_up_position = ;
+const int ci_magnet_down_position = ;
+boolean bt_IRcrown_detection = true;                 //  " logic is backwards ie. false is positive and true is negative
 
 long l_turntable_motor_position;
 long l_arm_motor_position;
-
-const int ci_drive_speed = 1600;
 
 void setup() {
   Wire.begin();        // Wire library required for I2CEncoder library
@@ -111,79 +108,6 @@ void loop() {
   Serial.println(l_arm_motor_position );
 #endif
 
-<<<<<<< HEAD
-  /***************************************************************************************************************************/
-  /*                                               MODE 1                                                                    */
-  /***************************************************************************************************************************/
-
-
-  /*
-  Logic
-
-  Calibrated (sensors, servos)? If no, calibrate. If yes, proceed.
-
-  Drive
-
-  If a wall has been detected in front of the device
-    Turn 90 (alternating right and left) -> keep a counter
-    Then turn another 90 degrees (same direction)
-    Resume driving
-
-  If the IR sensor has been tripped,
-    stop driving
-    Drive backward 2" (130 encoder ticks)
-    stop driving
-    Move the arm to the left side
-    Lower the wrist
-    Sweep the arm from side to side while reading from the Hall Effect sensor
-
-    If a Hall Effect sensor detects a large enough change, record the encoder position of the turntable servo motor
-      move the turntable servo motor back to that position
-
-    If after 1 sweep, the Hall Effect sensor doesn't detect a change
-      Move the turntable servo to the left position
-      Lower the arm servo (a.k.a. "elbow") so that the end effector is low to the ground
-      Move the turntable servo to the right position (to sweep the bad tesseract out of the way)
-    ELSE If the Hall Effect sensor detects a large enough change
-      Lower the magnet servo to lower the magnet -> picking up the tesseract
-      Raise the wrist servo so the end effector support bar is parallel to the ground
-      Drive back to the origin //Need to fully define logic how to do that
-      Rotate the arm to the side of the device (logic determines which side to move to)
-      Drive forward slowly (toward the corner of the arena)
-      Scan with the IR sensor on the arm
-
-      If the analog reading is defined in the range of an empty space (after reading 1 tape value) *calibrated values
-        stop driving
-        Raise the arm (elbow) ~30 degrees
-        Lower the wrist so it hangs vertically
-        Raise the magnet servo to raise the magnet -> releases servo
-        Raise the wrist so the IR sensor is parallel with the ground
-        Drive back to the origin (reverse drive?)
-
-  //NEW CYCLE
-
-
-
-  */
-
-
-  //May just use
-  //followWall(ci_drive_speed,'L', 5); //Drives with keeping the left ultrasonic sensor 5 cm from the wall
-  driveStraightAheadEncoders(ci_drive_speed, 7736); //Encoder tickers corresponds to 10 ft. May get interrupted by a sensor getting tripped.
-  
-  //If proximity to wall is <= 5 cm AND the wrist servo is 
-  if ((ui_front_distance_reading <= 5) && (servo_wrist_motor.read() >= ci_wrist_parallel)) {
-    skidsteerNinetyRight(ci_drive_speed);
-  }
-
-
-
-  if (bt_IRcrown_detection == true) {
-    stopDrive();
-    driveStraightAheadEncoders(1400, 130);
-  }
-  else continue;
-=======
 //assuming the driving code is above
 
 if(bt_IRcrown_detection==true){  // if tesseract detected
@@ -191,9 +115,11 @@ if(bt_IRcrown_detection==true){  // if tesseract detected
 driveStraightAheadEncoders(1400,130); // back up 2in
 armEncoderPosition(ci_arm_half_position); // raise arm to an angle of 45 degrees
 turnTurntableEncodersPosition(ci_turntable_left_position); // move turntable arm to the leftmost extremity 
-
+armEncoderPosition(ci_arm_horizontal_position); // raise arm to an angle of 45 degrees
+tesseractScanSweep(ci_turntable_right_position);
+armEncoderPosition(ci_arm_half_position);
+turnTurntableEncodersPosition(ci_turntable_middle_position);
 }
-
 else continue;
 }
 

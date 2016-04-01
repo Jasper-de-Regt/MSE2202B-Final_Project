@@ -41,7 +41,7 @@ void moveToPosn(Servo serv0, int servo_pin, int initial, int final, bool hardSta
       }
       if (serv0.read() < final) {
         serv0.write(serv0.read() + 1);
-      }
+      } 
       previous = current;
     }
 
@@ -139,13 +139,12 @@ int hallEffectMeasurement() {
 
 // scans for fluctuating magnetic field to see if there is a magnetic tesseract, return true if true
 void tesseractScanSweep(int maxPosition) {
-  for (int i = encoder_turntable_motor.getRawPosition(); i < maxPosition; i + 10) {
+  for (int i = encoder_turntable_motor.getRawPosition(); i < maxPosition; i + 30) { // not sure if this is the best way to scan
     turnTurntableEncodersPosition(i);
     if (/*hallEffectMeasurement*/) {     //checks to see if there is an abnormality in the hall effects analog read, if yes then break the loop
       break;
     }
   }
-  armEncoderPosition(200);
 }
 
 // call this function to follow a wall. Example followWall(R, 15, 1600) will follow a wall on the right side, maintaining a distance of 15cm, at a speed of 1600
