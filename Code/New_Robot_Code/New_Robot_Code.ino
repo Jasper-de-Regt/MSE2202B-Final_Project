@@ -83,6 +83,42 @@ const int ci_drive_speed = 1600;
 void setup() {
   Wire.begin();        // Wire library required for I2CEncoder library
   Serial.begin(9600);
+
+
+
+  // Pin Setup LRTA
+  //************************************************************************
+
+  pinMode(ci_left_motor, OUTPUT);
+  servo_left_motor.attach(ci_left_motor);
+
+  pinMode(ci_right_motor, OUTPUT);
+  servo_right_motor.attach(ci_right_motor);
+
+  pinMode(ci_turntable_motor, OUTPUT);
+  servo_turntable_motor.attach(ci_turntable_motor);
+
+  pinMode(ci_arm_motor, OUTPUT);
+  servo_arm_motor.attach(ci_arm_motor);
+
+  //************************************************************************
+
+  // setup encoders. Must be initiliazed in the order that they are chained together,
+  // starting with the encoder directly attached to the arduino
+  encoder_leftMotor.init(1.0 / 3.0 * MOTOR_393_SPEED_ROTATIONS, MOTOR_393_TIME_DELTA);
+  encoder_leftMotor.setReversed(false);  // adjust for positive count when moving forward
+
+  encoder_rightMotor.init(1.0 / 3.0 * MOTOR_393_SPEED_ROTATIONS, MOTOR_393_TIME_DELTA);
+  encoder_rightMotor.setReversed(true);  // adjust for positive count when moving forward
+
+  encoder_turntable_motor.init(1.0 / 3.0 * MOTOR_393_SPEED_ROTATIONS, MOTOR_393_TIME_DELTA);
+  encoder_turntable_motor.setReversed(false);  // adjust for positive count when moving forward
+
+  encoder_arm_motor.init(1.0 / 3.0 * MOTOR_393_SPEED_ROTATIONS, MOTOR_393_TIME_DELTA);
+  encoder_arm_motor.setReversed(true);  // adjust for positive count when turning clockwise
+
+  encoder_turntable_motor.zero();       //Robot arm must be positioned on the standoffs to be properly zeroed
+  encoder_arm_motor.zero();
 }
 
 void loop() {
