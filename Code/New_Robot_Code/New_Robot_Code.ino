@@ -4,7 +4,7 @@
 #include <CharliePlexM.h>
 #include <Wire.h>
 #include <I2CEncoder.h>
-
+#include <NewPing.h>
 /*
   Naming conventions:
 
@@ -86,7 +86,7 @@ void setup() {
 
 
 
-  // Pin Setup LRTA
+  // Pin Setup
   //************************************************************************
 
   pinMode(ci_left_motor, OUTPUT);
@@ -125,3 +125,193 @@ void loop() {
   // put your main code here, to run repeatedly:
 
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//FUNCTIONS
+
+// some mini functions, mainly used in followWall()
+void stopDrive() {
+  servo_right_motor.writeMicroseconds(1500);
+  servo_left_motor.writeMicroseconds(1500);
+}
+void stopTurntable() {
+  servo_turntable_motor.writeMicroseconds(1500);
+}
+void stopArm() {
+  servo_arm_motor.writeMicroseconds(1500);
+}
+void driveStraight(int driveSpeed) {
+  servo_right_motor.writeMicroseconds(driveSpeed);
+  servo_left_motor.writeMicroseconds(driveSpeed);
+}
+void turnRight(int driveSpeed, int speedModifier) {
+  servo_right_motor.writeMicroseconds(driveSpeed - speedModifier);
+  servo_left_motor.writeMicroseconds(driveSpeed + speedModifier);
+}
+void turnRightSharp(int driveSpeed, int speedModifier) {
+  servo_right_motor.writeMicroseconds(driveSpeed - speedModifier * 1.5);
+  servo_left_motor.writeMicroseconds(driveSpeed + speedModifier * 1.5);
+}
+void turnLeft(int driveSpeed, int speedModifier) {
+  servo_right_motor.writeMicroseconds(driveSpeed + speedModifier);
+  servo_left_motor.writeMicroseconds(driveSpeed - speedModifier);
+}
+void turnLeftSharp(int driveSpeed, int speedModifier) {
+  servo_right_motor.writeMicroseconds(driveSpeed + speedModifier * 1.5);
+  servo_left_motor.writeMicroseconds(driveSpeed - speedModifier * 1.5);
+}
+
+//moves turntable to desired position
+void turnTurntableEncodersPosition(int encoderPosition) {
+  if ((encoder_turntable_motor.getRawPosition() - encoderPosition) < 0) {
+    while ((encoder_turntable_motor.getRawPosition() - encoderPosition) < 0) {
+      servo_turntable_motor.writeMicroseconds(1600);
+    }
+  }
+  else {
+    while ((encoder_turntable_motor.getRawPosition() - encoderPosition) > 0) {
+      servo_turntable_motor.writeMicroseconds(1400);
+    }
+  }
+  stopTurntable();
+}
+
+//moves arm to desired position
+void armEncoderPosition(int encoderPosition) {
+  if ((encoder_arm_motor.getRawPosition() - encoderPosition) < 0) {
+    while ((encoder_arm_motor.getRawPosition() - encoderPosition) < 0) {
+      servo_arm_motor.writeMicroseconds(1600);
+    }
+  }
+  else {
+    while ((encoder_arm_motor.getRawPosition() - encoderPosition) > 0) {
+      servo_arm_motor.writeMicroseconds(1400);
+    }
+  }
+  stopArm();
+}
+
+// scans for fluctuating magnetic field to see if there is a magnetic tesseract, return true if true
+void tesseractScanSweep(int maxPosition) {
+  for (int i = encoder_turntable_motor.getRawPosition(); i < maxPosition; i + 10) {
+    for (int i = encoder_turntable_motor.getRawPosition(); i < maxPosition; i + 30) { // not sure if this is the best way to scan
+      turnTurntableEncodersPosition(i);
+      if (analogRead(ci_hall_effect)) {     //checks to see if there is an abnormality in the hall effects analog read, if yes then break the loop
+        break;
+      }
+      armEncoderPosition(ci_arm_diagonal_position);
+    }
+  }
+}
+
+/*
+  // call this function to follow a wall. Example followWall(R, 15, 1600) will follow a wall on the right side, maintaining a distance of 15cm, at a speed of 1600
+  void followWall(int driveSpeed, char wallSide, int desiredDistance) {
+
+  int speedModifier = (driveSpeed - 1500) / 3;    // how much to modify the speed for turns
+  if ((driveSpeed - speedModifier * 1.5) < 1500) {    // ensure the motor wouldnt run in reverse
+    speedModifier = (driveSpeed - 1500) / 1.5;
+  }
+
+  int frontLeftSensorData = frontLeftPingSensor.ping_cm();
+  int backLeftSensorData = backLeftPingSensor.ping_cm();
+
+  // if the wall is on the right side
+  if ((wallSide == 'R') || (wallSide == 'r')) {
+    int frontRightSensorData = frontRightPingSensor.ping_cm();                      //populate int with sensor data (in centimeters)
+    int backRightSensorData = backRightPingSensor.ping_cm();
+    ////////////////////////////////////////////////////////////////////////////////
+    if (((frontRightSensorData + backRightSensorData) / 2) == desiredDistance) {    // if the correct distance away from wall
+      if (frontRightSensorData == backRightSensorData) {                            // if correct distance from wall, and driving parallel, drive straight
+        driveStraight(driveSpeed);
+      }
+      if (frontRightSensorData < backRightSensorData) {                             // if correct distance from wall, and driving towards wall, turn away from wall a little
+        turnLeft(driveSpeed, speedModifier);
+      }
+      if (frontRightSensorData > backRightSensorData) {                             // if correct distance from wall, and driving away from wall, turn towards wall a little
+        turnRight(driveSpeed, speedModifier);
+      }
+    }
+    ////////////////////////////////////////////////////////////////////////////////
+    if (((frontRightSensorData + backRightSensorData) / 2) < desiredDistance) {     // if too close to the wall
+      if (frontRightSensorData == backRightSensorData) {                            // if too close to the wall, and driving parallel to wall, turn away from wall a little
+        turnLeft(driveSpeed, speedModifier);
+      }
+      if (frontRightSensorData < backRightSensorData) {                             // if too close to the wall, and driving towards the wall, turn away from wall a bunch
+        turnLeftSharp(driveSpeed, speedModifier);
+      }
+      if (frontRightSensorData > backRightSensorData) {                             // if too close to the wall, and driving away from wall, drive straight
+        driveStraight(driveSpeed);
+      }
+    }
+    ////////////////////////////////////////////////////////////////////////////////
+    if (((frontRightSensorData + backRightSensorData) / 2) > desiredDistance) {     // if too far away from the wall
+      if (frontRightSensorData == backRightSensorData) {                            // if too far away from the wall, and parallel to the wall, turn towards wall slightly
+        turnRight(driveSpeed, speedModifier);
+      }
+      if (frontRightSensorData < backRightSensorData) {                             // if too far away from the wall, and angled towards the wall, drive straight
+        driveStraight(driveSpeed);
+      }
+      if (frontRightSensorData > backRightSensorData) {                              // if too far from the wall, and heading away from the wall, turn towards the wall a bunch
+        turnRightSharp(driveSpeed, speedModifier);
+      }
+    }
+  }                                                             // end of   if (wallside=='r')
+  //*************************************************************************************************************************************************************************************//*
+  // if the wall is on the left side
+  if ((wallSide == 'L') || (wallSide == 'l')) {
+  int frontLeftSensorData = frontLeftPingSensor.ping_cm();                      //populate int with sensor data (in centimeters)
+  int backLeftSensorData = backLeftPingSensor.ping_cm();
+  ////////////////////////////////////////////////////////////////////////////////
+  if (((frontLeftSensorData + backLeftSensorData) / 2) == desiredDistance) {    // if the correct distance away from wall
+  if (frontLeftSensorData == backLeftSensorData) {                            // if correct distance from wall, and driving parallel, drive straight
+  driveStraight(driveSpeed);
+  }
+  if (frontLeftSensorData < backLeftSensorData) {                             // if correct distance from wall, and driving towards wall, turn away from wall a little
+  turnRight(driveSpeed, speedModifier);
+  }
+  if (frontLeftSensorData > backLeftSensorData) {                             // if correct distance from wall, and driving away from wall, turn towards wall a little
+  turnLeft(driveSpeed, speedModifier);
+  }
+  }
+  ////////////////////////////////////////////////////////////////////////////////
+  if (((frontLeftSensorData + backLeftSensorData) / 2) < desiredDistance) {     // if too close to the wall
+  if (frontLeftSensorData == backLeftSensorData) {                            // if too close to the wall, and driving parallel to wall, turn away from wall a little
+  turnRight(driveSpeed, speedModifier);
+  }
+  if (frontLeftSensorData < backLeftSensorData) {                             // if too close to the wall, and driving towards the wall, turn away from wall a bunch
+  turnRightSharp(driveSpeed, speedModifier);
+  }
+  if (frontLeftSensorData > backLeftSensorData) {                             // if too close to the wall, and driving away from wall, drive straight
+  driveStraight(driveSpeed);
+  }
+  }
+  ////////////////////////////////////////////////////////////////////////////////
+  if (((frontLeftSensorData + backLeftSensorData) / 2) > desiredDistance) {     // if too far away from the wall
+  if (frontLeftSensorData == backLeftSensorData) {                            // if too far away from the wall, and parallel to the wall, turn towards wall slightly
+  turnLeft(driveSpeed, speedModifier);
+  }
+  if (frontLeftSensorData < backLeftSensorData) {                             // if too far away from the wall, and angled towards the wall, drive straight
+  driveStraight(driveSpeed);
+  }
+  if (frontLeftSensorData > backLeftSensorData) {                              // if too far from the wall, and heading away from the wall, turn towards the wall a bunch
+  turnLeftSharp(driveSpeed, speedModifier);
+  }
+  }
+  }                                                             // end of   if (wallside=='l')
+  }
+*/
