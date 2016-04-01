@@ -64,7 +64,9 @@ const int ci_arm_wall_tesseract_scan = ;         //  "
 const int ci_wrist_wall_tesseract_scan = ;       //  "
 const int ci_wrist_position_perpendicular = ;    //  " Wrist bar is perpendicular to the arm.
 const int ci_wrist_position_parallel = ;         //  " Wrist bar is parallel to the arm.
-const double cd_robot_diameter = 23.42;            //  Radius of the device ~ 23.42 mm
+
+const double cd_robot_diameter = 23.42;          //  Radius of the device ~ 23.42 mm
+char ch_tracking_direction = 'R';                //  Character value is either 'R', 'L', 'l' or 'r'
 
 boolean bt_IRcrown_detection = ;                 //  "
 
@@ -134,6 +136,7 @@ void loop() {
         use the left ultrasonic sensors
 
   If a wall has been detected in front of the device
+    Stop driving
     Turn 90 (alternating right and left) -> keep a counter
     Then turn another 90 degrees (same direction)
     Resume driving
@@ -181,32 +184,51 @@ void loop() {
   }
   else if (ui_num_turns > 0) {
     if ((ui_num_turns % 2) == 1) {
-    followWall(ci_drive_speed, 'R' , ((cd_robot_diameter / 3) + cd_robot_diameter* (ui_num_turns - 1)) ); //Sets the bot to follow the wall on the right hand side 
+      ch_tracking_direction = 'R';
     }
     else if ((ui_num_turns % 2) == 0) {
-      followWall(ci_drive_speed, 'L' , ((cd_robot_diameter / 3) + cd_robot_diameter* (ui_num_turns - 1)) ); //Sets the bot to follow the wall on the left hand side
+      ch_tracking_direction = 'L';
     }
-      
-    //If proximity to wall is <= 7 cm AND the wrist bar is parallel to the ground
+
+    // Follow the wall from the tracking direction that corresponds to the number of turns
+    followWall(ci_drive_speed, ch_tracking_direction , ((cd_robot_diameter / 3) + cd_robot_diameter * (ui_num_turns - 1)) ); //Sets the bot to follow the wall on the right hand side
+
+    //If proximity to wall is <= 8 cm AND the wrist bar is parallel to the ground
     //The ultrasonic sensor isn't reliable below 7 cm
-    if ((ui_front_distance_reading <= 7) && (servo_wrist_motor.read() >= ci_wrist_parallel)) {
-      skidsteerNinetyRight(ci_drive_speed);
-      skidsteerNinetyRight(ci_drive_speed);
+    if ((ui_front_distance_reading <= 8) && (servo_wrist_motor.read() >= ci_wrist_parallel)) {
+      //Do a sweep
+      //
+      //
+      //
+      //
+      if ((ch_tracking_direction == 'L') || (ch_tracking_direction == 'l')) {
+        skidsteerNinetyLeft(ci_drive_speed);
+        skidsteerNinetyLeft(ci_drive_speed);
+      }
+      else if ((ch_tracking_direction == 'R') || (ch_tracking_direction == 'r')) {
+        skidsteerNinetyRight(ci_drive_speed);
+        skidsteerNinetyRight(ci_drive_speed);
+      }
     }
+    
+    
+
+    //*********************************************MIKE'S CODE************************************************************************
+    //*********************************************REMOVE THIS PARTITION LATER********************************************************
+    //********************************************************************************************************************************
+
+    //assuming the driving code is above
+
+    if (bt_IRcrown_detection == true) { // if tesseract detected
+      stopDrive();
+      driveStraightAheadEncoders(1400, 130); // back up 2in
+      armEncoderPosition(ci_arm_half_position); // raise arm to an angle of 45 degrees
+      turnTurntableEncodersPosition(ci_turntable_left_position); // move turntable arm to the leftmost extremity
+
+    }
+
+    else continue;
   }
-
-  //assuming the driving code is above
-
-  if (bt_IRcrown_detection == true) { // if tesseract detected
-    stopDrive();
-    driveStraightAheadEncoders(1400, 130); // back up 2in
-    armEncoderPosition(ci_arm_half_position); // raise arm to an angle of 45 degrees
-    turnTurntableEncodersPosition(ci_turntable_left_position); // move turntable arm to the leftmost extremity
-
-  }
-
-  else continue;
-}
 
 
 
