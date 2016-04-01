@@ -143,6 +143,30 @@ void loop() {
 
 //FUNCTIONS
 
+/* Function List + How to Call
+
+Arm Servo functions
+void moveToPosn(servo, servo pin, initial posn, final posn, bool to start at initial);
+
+Driving functions
+void stopDrive(); //Stops the motors
+void driveStraight(int driveSpeed); //Sets both motors at the same speed
+void driveStraightAheadEncoders(int driveSpeed, int encoderTicks); //driveSpeed is a constant, encoder ticks corresponds to the distance you want to travel. **1000 encoder ticks makes for about 15.5" or 39.4cm
+
+Wall-Following functions
+void followWall(int driveSpeed, char wallSide, int desiredDistance); // call to follow a wall. Example followWall(1600, R, 15) will follow a wall on the right side, maintaining a distance of 15cm, at a speed of 1600
+void moveFurtherFromWall(int driveSpeed, char wallSide); //wallSide should be either R or L (capital or lowercase)
+
+Turning functions
+void turnRight(int driveSpeed, int speedModifier); //driveSpeed is const. speedModifier is added/subtracted from left/right respectively.
+void turnRightSharp(int driveSpeed, int speedModifier); //similar to turnRight(), but speedModifier is multiplied by 1.5
+void turnLeft(int driveSpeed, int speedModifier); //driveSpeed is const. speedModifier is added/subtracted from right/left respectively.
+void turnLeftSharp(int driveSpeed, int speedModifier); //similar to turnLeft(), but speedModifier is multiplied by 1.5
+void skidsteerNinetyRight(int driveSpeed); // driveSpeed will be a constant as defined in the main code 
+void skidsteerNinetyLeft(int driveSpeed) // Same note as above
+
+*/
+
 // some mini functions, mainly used in followWall()
 
 void stopDrive() {
