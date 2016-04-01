@@ -41,6 +41,15 @@ const int ci_right_motor = 8;
 const int ci_left_motor = 9;
 const int ci_arm_motor = 10;
 const int ci_turntable_motor = 11 ;
+const in
+
+//ff =13;
+//fr=12;
+//br=6;
+//fl=2;
+//bl=3;
+
+
 
 //analog pins
 const int ci_arm_linetracker = A2;
