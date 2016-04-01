@@ -22,15 +22,15 @@
 
 Servo left_motor;
 Servo right_motor;
-Servo turntable_motor;
 Servo arm_motor;
+Servo turntable_motor;
 Servo servo_wrist_motor;
 Servo servo_magnet_motor;
 
 I2CEncoder encoder_leftMotor;
 I2CEncoder encoder_rightMotor;
-I2CEncoder encoder_turntable_motor;
 I2CEncoder encoder_arm_motor;
+I2CEncoder encoder_turntable_motor;
 
 //port pin constants
 //digital pins
@@ -100,11 +100,11 @@ void setup() {
   pinMode(ci_right_motor, OUTPUT);
   right_motor.attach(ci_right_motor);
 
-  pinMode(ci_turntable_motor, OUTPUT);
-  turntable_motor.attach(ci_turntable_motor);
-
   pinMode(ci_arm_motor, OUTPUT);
   arm_motor.attach(ci_arm_motor);
+
+  pinMode(ci_turntable_motor, OUTPUT);
+  turntable_motor.attach(ci_turntable_motor);
 
   pinMode(ci_big_wrist_servo, OUTPUT);
   servo_wrist_motor.attach(ci_big_wrist_servo);
@@ -120,11 +120,11 @@ void setup() {
   encoder_rightMotor.init(1.0 / 3.0 * MOTOR_393_SPEED_ROTATIONS, MOTOR_393_TIME_DELTA);
   encoder_rightMotor.setReversed(true);  // adjust for positive count when moving forward
 
-  encoder_turntable_motor.init(1.0 / 3.0 * MOTOR_393_SPEED_ROTATIONS, MOTOR_393_TIME_DELTA);
-  encoder_turntable_motor.setReversed(false);  // adjust for positive count when moving forward
-
   encoder_arm_motor.init(1.0 / 3.0 * MOTOR_393_SPEED_ROTATIONS, MOTOR_393_TIME_DELTA);
   encoder_arm_motor.setReversed(true);  // adjust for positive count when turning clockwise
+
+  encoder_turntable_motor.init(1.0 / 3.0 * MOTOR_393_SPEED_ROTATIONS, MOTOR_393_TIME_DELTA);
+  encoder_turntable_motor.setReversed(false);  // adjust for positive count when moving forward
 
   encoder_turntable_motor.zero();       //Robot arm must be positioned on the standoffs to be properly zeroed
   encoder_arm_motor.zero();
@@ -329,7 +329,7 @@ void tesseractScanSweep(int maxPosition) {
     }
     armEncoderPosition(ci_arm_diagonal_position);
   }
-}
+  }
 */
 
 
