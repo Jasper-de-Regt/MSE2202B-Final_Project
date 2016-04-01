@@ -9,15 +9,15 @@
 /*
 Naming conventions:
 
-*camelcase for function
+*camelcase
 - E.g. itLooksLikeThis
 
-*significant words in the title should be separated by underscores "_" **for variables
+*significant words in the title should be separated by underscores "_"
 - E.g. motor_pin_one
 
 *CAPITALIZE ACRONYMS
 - E.g. IR instead of infrared.
-       LED instead of light_emitting_diode (variable) or lightEmittingDiode (function)
+       LED instead of light_emitting_diode or lightEmittingDiode
 
 */
 
@@ -36,15 +36,15 @@ I2CEncoder encoder_arm_motor;
 
 //port pin constants
 
-const int ci_turntable_motor = 10;
-const int ci_arm_motor = 11;
-const int ci_hall_effect = 6;
+const int ci_turntable_motor = 11 ;
+const int ci_arm_motor = 10;
+const int ci_hall_effect = A3;
 const int ci_right_motor = 8;
 const int ci_left_motor = 9;
 const int ci_wrist_servo = 5;
 const int ci_IR_crown = 7;  //High when no tesseract, low when tesseract
 const int ci_magnet_servo = 4;
-const int ci_arm_linetracker = 3;
+const int ci_arm_linetracker = A2;
 const int ci_I2C_SDA = A4;         // I2C data = white
 const int ci_I2C_SCL = A5;         // I2C clock = yellow
 
@@ -53,22 +53,27 @@ const int ci_turntable_default_position = 0;     //  Experiment to determine app
 const int ci_turntable_left_position = 400;      //  "
 const int ci_turntable_middle_position = 980;    //  "
 const int ci_turntable_right_position = 1540;    //  "
-const int ci_arm_vertical_position = 0;          //  "
+const int ci_arm_vertical_position = 400;          //  "
 const int ci_arm_half_position = 200;            //  "
-const int ci_arm_horizontal_position = 400;      //  "
+const int ci_arm_horizontal_position = 0;      //  "
 const int ci_arm_wall_line_scan = 0;             //  "
 const int ci_wrist_wall_line_scan = ;            //  "
 const int ci_arm_modetwo_dropoff = ;             //  "
 const int ci_wrist_modetwo_dropoff = ;           //  "
 const int ci_arm_wall_tesseract_scan = ;         //  "
 const int ci_wrist_wall_tesseract_scan = ;       //  "
+
+const int ci_magnet_up_position = ;
+const int ci_magnet_down_position = ;
+boolean bt_IRcrown_detection = true;                 //  " logic is backwards ie. false is positive and true is negative
+
 const int ci_wrist_position_perpendicular = ;    //  " Wrist bar is perpendicular to the arm.
 const int ci_wrist_position_parallel = ;         //  " Wrist bar is parallel to the arm.
 
 const double cd_robot_diameter = 23.42;          //  Radius of the device ~ 23.42 mm
 char ch_tracking_direction = 'R';                //  Character value is either 'R', 'L', 'l' or 'r'
 
-boolean bt_IRcrown_detection = ;                 //  "
+
 
 long l_turntable_motor_position;
 long l_arm_motor_position;
@@ -116,7 +121,7 @@ void loop() {
   Serial.println(l_arm_motor_position );
 #endif
 
-  <<< <<< < HEAD
+
   /***************************************************************************************************************************/
   /*                                               MODE 1                                                                    */
   /***************************************************************************************************************************/
@@ -194,6 +199,7 @@ void loop() {
     followWall(ci_drive_speed, ch_tracking_direction , ((cd_robot_diameter / 3) + cd_robot_diameter * (ui_num_turns - 1)) ); //Sets the bot to follow the wall on the right hand side
 
     //If proximity to wall is <= 8 cm AND the wrist bar is parallel to the ground
+
     //The ultrasonic sensor isn't reliable below 7 cm
     if ((ui_front_distance_reading <= 8) && (servo_wrist_motor.read() >= ci_wrist_parallel)) {
       //Do a sweep
@@ -217,18 +223,21 @@ void loop() {
     //*********************************************REMOVE THIS PARTITION LATER********************************************************
     //********************************************************************************************************************************
 
-    //assuming the driving code is above
 
-    if (bt_IRcrown_detection == true) { // if tesseract detected
-      stopDrive();
-      driveStraightAheadEncoders(1400, 130); // back up 2in
-      armEncoderPosition(ci_arm_half_position); // raise arm to an angle of 45 degrees
-      turnTurntableEncodersPosition(ci_turntable_left_position); // move turntable arm to the leftmost extremity
-
-    }
-
-    else continue;
+  if (bt_IRcrown_detection == true) { // if tesseract detected
+    stopDrive();
+    driveStraightAheadEncoders(1400, 130); // back up 2in
+    armEncoderPosition(ci_arm_half_position); // raise arm to an angle of 45 degrees
+    turnTurntableEncodersPosition(ci_turntable_left_position); // move turntable arm to the leftmost extremity
+    armEncoderPosition(ci_arm_horizontal_position); // raise arm to an angle of 45 degrees
+    tesseractScanSweep(ci_turntable_right_position);
+    armEncoderPosition(ci_arm_half_position);
+    turnTurntableEncodersPosition(ci_turntable_middle_position);
   }
+  else continue;
+
+
+}
 
 
 
