@@ -20,10 +20,10 @@
 
 */
 
-Servo servo_left_motor;
-Servo servo_right_motor;
-Servo servo_turntable_motor;
-Servo servo_arm_motor;
+Servo left_motor;
+Servo right_motor;
+Servo turntable_motor;
+Servo arm_motor;
 Servo servo_wrist_motor;
 Servo servo_magnet_motor;
 
@@ -90,16 +90,16 @@ void setup() {
   //************************************************************************
 
   pinMode(ci_left_motor, OUTPUT);
-  servo_left_motor.attach(ci_left_motor);
+  left_motor.attach(ci_left_motor);
 
   pinMode(ci_right_motor, OUTPUT);
-  servo_right_motor.attach(ci_right_motor);
+  right_motor.attach(ci_right_motor);
 
   pinMode(ci_turntable_motor, OUTPUT);
-  servo_turntable_motor.attach(ci_turntable_motor);
+  turntable_motor.attach(ci_turntable_motor);
 
   pinMode(ci_arm_motor, OUTPUT);
-  servo_arm_motor.attach(ci_arm_motor);
+  arm_motor.attach(ci_arm_motor);
 
   //************************************************************************
 
@@ -144,68 +144,137 @@ void loop() {
 //FUNCTIONS
 
 // some mini functions, mainly used in followWall()
+
 void stopDrive() {
-  servo_right_motor.writeMicroseconds(1500);
-  servo_left_motor.writeMicroseconds(1500);
+  right_motor.writeMicroseconds(1500);
+  left_motor.writeMicroseconds(1500);
 }
 void stopTurntable() {
-  servo_turntable_motor.writeMicroseconds(1500);
+  turntable_motor.writeMicroseconds(1500);
 }
 void stopArm() {
-  servo_arm_motor.writeMicroseconds(1500);
+  arm_motor.writeMicroseconds(1500);
 }
 void driveStraight(int driveSpeed) {
-  servo_right_motor.writeMicroseconds(driveSpeed);
-  servo_left_motor.writeMicroseconds(driveSpeed);
+  right_motor.writeMicroseconds(driveSpeed);
+  left_motor.writeMicroseconds(driveSpeed);
 }
 void turnRight(int driveSpeed, int speedModifier) {
-  servo_right_motor.writeMicroseconds(driveSpeed - speedModifier);
-  servo_left_motor.writeMicroseconds(driveSpeed + speedModifier);
+  right_motor.writeMicroseconds(driveSpeed - speedModifier);
+  left_motor.writeMicroseconds(driveSpeed + speedModifier);
 }
 void turnRightSharp(int driveSpeed, int speedModifier) {
-  servo_right_motor.writeMicroseconds(driveSpeed - speedModifier * 1.5);
-  servo_left_motor.writeMicroseconds(driveSpeed + speedModifier * 1.5);
+  right_motor.writeMicroseconds(driveSpeed - speedModifier * 1.5);
+  left_motor.writeMicroseconds(driveSpeed + speedModifier * 1.5);
 }
 void turnLeft(int driveSpeed, int speedModifier) {
-  servo_right_motor.writeMicroseconds(driveSpeed + speedModifier);
-  servo_left_motor.writeMicroseconds(driveSpeed - speedModifier);
+  right_motor.writeMicroseconds(driveSpeed + speedModifier);
+  left_motor.writeMicroseconds(driveSpeed - speedModifier);
 }
 void turnLeftSharp(int driveSpeed, int speedModifier) {
-  servo_right_motor.writeMicroseconds(driveSpeed + speedModifier * 1.5);
-  servo_left_motor.writeMicroseconds(driveSpeed - speedModifier * 1.5);
+  right_motor.writeMicroseconds(driveSpeed + speedModifier * 1.5);
+  left_motor.writeMicroseconds(driveSpeed - speedModifier * 1.5);
+}
+
+// call this to drive "straight" ahead to a new encoder value
+// for example this will drive straight ahead at speed 1600 until both motors have incremented 1000 encdoer ticks. driveStraightAheadEncoders(1600, 1000);
+// 1000 encoder ticks makes for about 15.5" or 39.4cm
+
+
+
+void driveStraightAheadEncoders(int driveSpeed, int encoderTicks) {
+  encoder_rightMotor.zero();      // 0 both encoders
+  encoder_leftMotor.zero();
+  while ((encoder_rightMotor.getRawPosition() < encoderTicks) || (encoder_leftMotor.getRawPosition() < encoderTicks)) {      // drive ahead to encoder value
+    right_motor.writeMicroseconds(driveSpeed);
+    left_motor.writeMicroseconds(driveSpeed);
+  }
+  stopDrive();
+}
+
+// call this to do a 90 degree pivot to the left
+// for example, this will pivot left 90 degrees at speed 1600. skidsteerNinetyLeft(1600);
+
+
+
+void skidsteerNinetyLeft(int driveSpeed) {
+  encoder_rightMotor.zero();      // 0 both encoders
+  encoder_leftMotor.zero();
+  while ((encoder_rightMotor.getRawPosition() < 439) || (encoder_leftMotor.getRawPosition() > -439)) {     // turn to 90 degree encoder value, 900 encoder ticks makes for a 180
+    right_motor.writeMicroseconds(driveSpeed);
+    left_motor.writeMicroseconds(3000 - driveSpeed);
+  }
+  stopDrive();
+}
+// call this to do a 90 degree pivot to the right
+// for example, this will pivot right 90 degrees at speed 1600. skidsteerNinetyRight(1600);
+
+
+
+void skidsteerNinetyRight(int driveSpeed) {
+  encoder_rightMotor.zero();      // 0 both encoders
+  encoder_leftMotor.zero();
+  while ((encoder_rightMotor.getRawPosition() > -439) || (encoder_leftMotor.getRawPosition() < 439)) {      // turn to 90 degree encoder value, 900 encoder ticks makes for a 180
+    right_motor.writeMicroseconds(3000 - driveSpeed);
+    left_motor.writeMicroseconds(driveSpeed);
+  }
+  stopDrive();
+}
+
+
+void moveFurtherFromWall(int driveSpeed, char wallSide) {
+  if ((wallSide == 'R') || (wallSide == 'r')) { // if wall is on right
+    skidsteerNinetyLeft(driveSpeed);            // turn 90 left
+    driveStraightAheadEncoders(1600, 203);      // drive head ~8cm
+    skidsteerNinetyLeft(driveSpeed);            // turn 90 left again
+  }
+  if ((wallSide == 'L') || (wallSide == 'l')) { // if wall is on right
+    skidsteerNinetyLeft(driveSpeed);            // turn 90 left
+    driveStraightAheadEncoders(1600, 203);      // drive head ~8cm
+    skidsteerNinetyLeft(driveSpeed);            // turn 90 left again
+  }
 }
 
 //moves turntable to desired position
+
+
+
 void turnTurntableEncodersPosition(int encoderPosition) {
   if ((encoder_turntable_motor.getRawPosition() - encoderPosition) < 0) {
     while ((encoder_turntable_motor.getRawPosition() - encoderPosition) < 0) {
-      servo_turntable_motor.writeMicroseconds(1600);
+      turntable_motor.writeMicroseconds(1600);
     }
   }
   else {
     while ((encoder_turntable_motor.getRawPosition() - encoderPosition) > 0) {
-      servo_turntable_motor.writeMicroseconds(1400);
+      turntable_motor.writeMicroseconds(1400);
     }
   }
   stopTurntable();
 }
 
 //moves arm to desired position
+
+
+
 void armEncoderPosition(int encoderPosition) {
   if ((encoder_arm_motor.getRawPosition() - encoderPosition) < 0) {
     while ((encoder_arm_motor.getRawPosition() - encoderPosition) < 0) {
-      servo_arm_motor.writeMicroseconds(1600);
+      arm_motor.writeMicroseconds(1600);
     }
   }
   else {
     while ((encoder_arm_motor.getRawPosition() - encoderPosition) > 0) {
-      servo_arm_motor.writeMicroseconds(1400);
+      arm_motor.writeMicroseconds(1400);
     }
   }
   stopArm();
 }
 
 // scans for fluctuating magnetic field to see if there is a magnetic tesseract, return true if true
+
+
+
 void tesseractScanSweep(int maxPosition) {
   for (int i = encoder_turntable_motor.getRawPosition(); i < maxPosition; i + 10) {
     for (int i = encoder_turntable_motor.getRawPosition(); i < maxPosition; i + 30) { // not sure if this is the best way to scan
