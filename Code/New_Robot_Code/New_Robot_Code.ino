@@ -35,10 +35,11 @@ I2CEncoder encoder_turntable_motor;
 //port pin constants
 //digital pins
 
-const int frontRightPingPin = 1; // pins still need to be decided
-const int backRightPingPin = 2; //
-const int frontLeftPingPin = 3; //
-const int backLeftPingPin = 6; //
+const int frontPingPin = 13;
+const int frontRightPingPin = 12;
+const int backRightPingPin = 6;
+const int frontLeftPingPin = 2;
+const int backLeftPingPin = 3;
 const int ci_little_magnet_servo = 4;
 const int ci_big_wrist_servo = 5;
 const int ci_IR_crown = 7;  //High when no tesseract, low when tesseract
@@ -100,6 +101,7 @@ const int ci_drive_speed = 1600;
 int timeDifference = 20; //Set as global.
 
 // setup NewPing objects
+NewPing frontPingSensor(frontPingPin, frontPingPin, 200);
 NewPing frontRightPingSensor(frontRightPingPin, frontRightPingPin, 200);
 NewPing backRightPingSensor(backRightPingPin, backRightPingPin, 200);
 NewPing frontLeftPingSensor(frontLeftPingPin, frontLeftPingPin, 200);
@@ -129,6 +131,12 @@ void setup() {
   pinMode(ci_big_wrist_servo, OUTPUT);
   servo_wrist_motor.attach(ci_big_wrist_servo);
 
+  pinMode(ci_little_magnet_servo, OUTPUT);
+  servo_magnet_motor.attach(ci_little_magnet_servo);
+
+  pinMode(ci_IR_crown, INPUT);
+  pinMode(ci_arm_linetracker, INPUT);
+  pinMode(ci_hall_effect, INPUT);
 
   //************************************************************************
 
@@ -332,25 +340,19 @@ void armEncoderPosition(int encoderPosition) {
 
 
 void tesseractScanSweep(int maxPosition) {
+  int tesseractLocation;
+  int encoderMaxHallRead = 0;
   for (int i = encoder_turntable_motor.getRawPosition(); i < maxPosition; i + 30) { // not sure if this is the best way to scan
-    turnTurntableEncodersPosition(i);
-    if (analogRead(ci_hall_effect)) {     //checks to see if there is an abnormality in the hall effects analog read, if yes then break the loop
-      break;
+    if (analogRead(ci_hall_effect) > encoderMaxHallRead) {
+      tesseractLocation = encoder_turntable_motor.getRawPosition();
     }
-    armEncoderPosition(ci_arm_diagonal_position);
+    turnTurntableEncodersPosition(i);
   }
+  turnTurntableEncodersPosition(tesseractLocation);
+  armEncoderPosition(ci_arm_diagonal_position);
 }
 
-/*void badTesseractSweep(){
-  for (int i = encoder_turntable_motor.getRawPosition(); i < maxPosition; i + 30) { // not sure if this is the best way to scan
-    turnTurntableEncodersPosition(i);
-    if (analogRead(ci_hall_effect)) {     //checks to see if there is an abnormality in the hall effects analog read, if yes then break the loop
-      break;
-    }
-    armEncoderPosition(ci_arm_diagonal_position);
-  }
-  }
-*/
+
 
 
 void servoMoveToPosition(Servo serv0, int final_Position) {
@@ -367,7 +369,6 @@ void servoMoveToPosition(Servo serv0, int final_Position) {
     }
   }
 }
-
 
 // call this function to follow a wall. Example followWall(R, 15, 1600) will follow a wall on the right side, maintaining a distance of 15cm, at a speed of 1600
 void followWall(int ci_drive_speed, char wallSide, int desiredDistance) {
