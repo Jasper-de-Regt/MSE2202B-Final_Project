@@ -183,7 +183,7 @@ void loop() {
     driveStraightAheadEncoders(1400, 130);
   }
   else continue;
-=======
+
 //assuming the driving code is above
 
 if(bt_IRcrown_detection==true){  // if tesseract detected
