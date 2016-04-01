@@ -68,10 +68,12 @@ const int ci_arm_horizontal_position = 0;
 const int ci_arm_modetwo_dropoff = 0;
 
 //Wrist positions
-const int ci_wrist_position_vertical = 0;    //  " Wrist bar is perpendicular to the arm.
-const int ci_wrist_position_diagonal = 0;    //45 degree angle
-const int ci_wrist_position_horizontal = 0;  //  " Wrist bar is parallel to the arm.
+const int ci_wrist_position_vertical = 200;    //  " Wrist bar is perpendicular to the arm.
+const int ci_wrist_position_Ddiagonal = 50;    //45 degree angle //D is for Downward 
+const int ci_wrist_position_Udiagonal = 150;    //45 degree angle //U is for Upward 
+const int ci_wrist_position_horizontal = 100;  //  " Wrist bar is parallel to the arm.
 const int ci_wrist_modetwo_dropoff = 0;      //  "
+const int ci_wrist_scanning = 25;
 
 //Magnet servo positions
 const int ci_magnet_up_position = 157; // Cant pickup tesseracts
@@ -340,6 +342,7 @@ void tesseractScanSweep(int maxPosition) {
     turnTurntableEncodersPosition(i);
   }
   turnTurntableEncodersPosition(tesseractLocation);
+  
   armEncoderPosition(ci_arm_diagonal_position);
 }
 
