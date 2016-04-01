@@ -277,7 +277,4 @@ void turnLeftSharp(int driveSpeed, int speedModifier) {
   servo_leftMotor.writeMicroseconds(driveSpeed - speedModifier * 1.5);
 }
 
-
-
-
 #endif
