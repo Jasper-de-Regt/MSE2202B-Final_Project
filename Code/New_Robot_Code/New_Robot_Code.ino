@@ -35,6 +35,7 @@ I2CEncoder encoder_turntable_motor;
 //port pin constants
 //digital pins
 
+const int frontPingPin = 13;
 const int frontRightPingPin = 12;
 const int backRightPingPin = 6;
 const int frontLeftPingPin = 2;
@@ -91,6 +92,7 @@ const int ci_drive_speed = 1600;
 int timeDifference = 20; //Set as global.
 
 // setup NewPing objects
+NewPing frontPingSensor(frontPingPin, frontPingPin, 200);
 NewPing frontRightPingSensor(frontRightPingPin, frontRightPingPin, 200);
 NewPing backRightPingSensor(backRightPingPin, backRightPingPin, 200);
 NewPing frontLeftPingSensor(frontLeftPingPin, frontLeftPingPin, 200);
@@ -332,8 +334,8 @@ void tesseractScanSweep(int maxPosition) {
   int tesseractLocation;
   int encoderMaxHallRead = 0;
   for (int i = encoder_turntable_motor.getRawPosition(); i < maxPosition; i + 30) { // not sure if this is the best way to scan
-    if(analogRead(ci_hall_effect)>encoderMaxHallRead){
-      tesseractLocation=encoder_turntable_motor.getRawPosition();
+    if (analogRead(ci_hall_effect) > encoderMaxHallRead) {
+      tesseractLocation = encoder_turntable_motor.getRawPosition();
     }
     turnTurntableEncodersPosition(i);
   }
