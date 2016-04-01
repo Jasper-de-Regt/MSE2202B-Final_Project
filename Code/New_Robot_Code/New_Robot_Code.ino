@@ -75,10 +75,15 @@ boolean bt_IRcrown_detection;                 //  " logic is backwards ie. false
 //bt_IRcrown_detection=digitalRead(ci_IR_crown); //I think
 
 //for driving
-const double cd_robot_diameter = 23.42;          //  Radius of the device ~ 23.42 mm
+const float cd_robot_diameter = 23.42;          //  Radius of the device ~ 23.42 mm
+
 char ch_tracking_direction = 'R';                //  Character value is either 'R', 'L', 'l' or 'r'
+
 unsigned int ui_num_turns = 0;
+
 const int ci_drive_speed = 1600;
+
+int timeDifference = 20; //Set as global.
 
 void setup() {
   Wire.begin();        // Wire library required for I2CEncoder library
@@ -307,6 +312,21 @@ void tesseractScanSweep(int maxPosition) {
         break;
       }
       armEncoderPosition(ci_arm_diagonal_position);
+    }
+  }
+}
+
+void moveToPosition(Servo serv0, int final_Position) {
+  long previous = millis();
+  while (serv0.read() != final_Position) {
+    if ((millis() - previous) >= timeDifference) {
+      if (serv0.read() > final_Position) {
+        serv0.write(serv0.read() - 1);
+      }
+      if (serv0.read() < final_Position) {
+        serv0.write(serv0.read() + 1);
+      } 
+      previous = millis();
     }
   }
 }
