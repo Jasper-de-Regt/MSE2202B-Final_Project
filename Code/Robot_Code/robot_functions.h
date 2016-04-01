@@ -10,7 +10,7 @@
   void driveStraightAheadEncoders(int driveSpeed, int encoderTicks); //driveSpeed is a constant, encoder ticks corresponds to the distance you want to travel. **1000 encoder ticks makes for about 15.5" or 39.4cm
 
 */
-
+/*
 void moveToPosn(Servo serv0, int servo_pin, int initial, int final, bool hardStartTrue) {
 
   int current = millis(); //current time
@@ -49,20 +49,8 @@ void moveToPosn(Servo serv0, int servo_pin, int initial, int final, bool hardSta
     current = millis();
   }
 }
+*/
 
-
-void moveFurtherFromWall(int driveSpeed, char wallSide) {
-  if ((wallSide == 'R') || (wallSide == 'r')) { // if wall is on right
-    skidsteerNinetyLeft(driveSpeed);            // turn 90 left
-    driveStraightAheadEncoders(1600, 203);      // drive head ~8cm
-    skidsteerNinetyLeft(driveSpeed);            // turn 90 left again
-  }
-  if ((wallSide == 'L') || (wallSide == 'l')) { // if wall is on right
-    skidsteerNinetyLeft(driveSpeed);            // turn 90 left
-    driveStraightAheadEncoders(1600, 203);      // drive head ~8cm
-    skidsteerNinetyLeft(driveSpeed);            // turn 90 left again
-  }
-}
 
 
 // call this to do a 90 degree pivot to the right
@@ -86,6 +74,19 @@ void skidsteerNinetyLeft(int driveSpeed) {
     servo_leftMotor.writeMicroseconds(3000 - driveSpeed);
   }
   stopDrive();
+}
+
+void moveFurtherFromWall(int driveSpeed, char wallSide) {
+  if ((wallSide == 'R') || (wallSide == 'r')) { // if wall is on right
+    skidsteerNinetyLeft(driveSpeed);            // turn 90 left
+    driveStraightAheadEncoders(1600, 203);      // drive head ~8cm
+    skidsteerNinetyLeft(driveSpeed);            // turn 90 left again
+  }
+  if ((wallSide == 'L') || (wallSide == 'l')) { // if wall is on right
+    skidsteerNinetyLeft(driveSpeed);            // turn 90 left
+    driveStraightAheadEncoders(1600, 203);      // drive head ~8cm
+    skidsteerNinetyLeft(driveSpeed);            // turn 90 left again
+  }
 }
 
 
