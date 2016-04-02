@@ -69,8 +69,8 @@ const int ci_arm_modetwo_dropoff = 0;
 
 //Wrist positions
 const int ci_wrist_position_vertical = 200;    //  " Wrist bar is perpendicular to the arm.
-const int ci_wrist_position_Ddiagonal = 50;    //45 degree angle //D is for Downward 
-const int ci_wrist_position_Udiagonal = 150;    //45 degree angle //U is for Upward 
+const int ci_wrist_position_Ddiagonal = 50;    //45 degree angle //D is for Downward
+const int ci_wrist_position_Udiagonal = 150;    //45 degree angle //U is for Upward
 const int ci_wrist_position_horizontal = 100;  //  " Wrist bar is parallel to the arm.
 const int ci_wrist_modetwo_dropoff = 0;      //  "
 const int ci_wrist_scanning = 25;
@@ -162,7 +162,8 @@ void setup() {
 
 
 void loop() {
-
+  Serial.println(servo_magnet_motor.read());
+ 
 }
 
 
@@ -335,6 +336,9 @@ void armEncoderPosition(int encoderPosition) {
 void tesseractScanSweep(int maxPosition) {
   int tesseractLocation;
   int encoderMaxHallRead = 0;
+  servo_wrist_motor.write(ci_wrist_scanning);
+  //armEncoderPosition(ci_arm_horizontal_position);
+  //still needs the arm height function
   for (int i = encoder_turntable_motor.getRawPosition(); i < maxPosition; i + 30) { // not sure if this is the best way to scan
     if (analogRead(ci_hall_effect) > encoderMaxHallRead) {
       tesseractLocation = encoder_turntable_motor.getRawPosition();
@@ -342,11 +346,49 @@ void tesseractScanSweep(int maxPosition) {
     turnTurntableEncodersPosition(i);
   }
   turnTurntableEncodersPosition(tesseractLocation);
-  
-  armEncoderPosition(ci_arm_diagonal_position);
+  servo_magnet_motor.write(ci_magnet_down_position);
+  servo_magnet_motor.write(ci_magnet_up_position);
+  //armEncoderPosition(ci_arm_diagonal_position);
+}
+/*Serial.println("High");
+       Serial.print("i:");
+       Serial.println(i);
+       Serial.print("Current");
+       Serial.println(servo_magnet_motor.read());
+       Serial.print("Final Position");
+       Serial.println(final_Position);
+*/
+void magnetSweep(int final_Position) {
+  //high is up, low is down
+  if (servo_magnet_motor.read() > final_Position) {
+    for (int i = servo_magnet_motor.read(); i > final_Position; i-- ) {
+      servo_magnet_motor.write(i);   
+      delay(15);
+    }
+  }
+  else {
+    for (int i = servo_magnet_motor.read(); i < final_Position; i++) {
+      servo_magnet_motor.write(i);   
+      delay(15);
+    }
+  }
 }
 
-
+void wristSweep(int final_Position) {
+  //
+  if (servo_wrist_motor.read() > final_Position) {
+    for (int i = servo_wrist_motor.read(); i > final_Position; i-- ) {
+      servo_wrist_motor.write(i);   
+      delay(15);
+    }
+  }
+  else {
+    for (int i = servo_wrist_motor.read(); i < final_Position; i++) {
+      servo_wrist_motor.write(i);   
+      delay(15);
+    }
+  }
+}
 
 
 void servoMoveToPosition(Servo serv0, int final_Position) {
