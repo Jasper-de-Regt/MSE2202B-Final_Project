@@ -67,6 +67,10 @@ bool tesseractArmScan() {
     moveArm(ci_arm_push_away_height);
     // sweep to far left
     moveTurntable(ci_turntable_left);
+    // raise arm
+    moveArm(ci_arm_carry_height);
+    //center turntable
+    moveTurntable(ci_turntable_center);
     return false;
   }
 }
