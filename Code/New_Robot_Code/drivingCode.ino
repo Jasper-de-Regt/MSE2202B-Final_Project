@@ -104,9 +104,9 @@ void moveFurtherFromWall(int ci_drive_speed, char wallSide) {
     skidsteerNinetyLeft(ci_drive_speed);            // turn 90 left again
   }
   if ((wallSide == 'L') || (wallSide == 'l')) { // if wall is on right
-    skidsteerNinetyLeft(ci_drive_speed);            // turn 90 left
+    skidsteerNinetyRight(ci_drive_speed);            // turn 90 left
     driveStraightAheadEncoders(1600, 203);      // drive head ~8cm
-    skidsteerNinetyLeft(ci_drive_speed);            // turn 90 left again
+    skidsteerNinetyRight(ci_drive_speed);            // turn 90 left again
   }
 }//****************end of moveFurtherFromWall****************end of moveFurtherFromWall****************
 

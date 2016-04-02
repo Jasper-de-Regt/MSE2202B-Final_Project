@@ -4,16 +4,15 @@
 
 // prints ping sensor readings in centimeters...
 void printPingSensorReadings() {
-  Serial.begin(9600);
   Serial.println();
   Serial.print("All readings [cm]    front: ");
   Serial.print(frontPingSensor.ping_cm());
   Serial.print("   frontLeft: ");
   Serial.print(frontLeftPingSensor.ping_cm());
-  Serial.print("   frontRight: ");
-  Serial.print(frontRightPingSensor.ping_cm());
   Serial.print("   backLeft: ");
   Serial.print(backLeftPingSensor.ping_cm());
+  Serial.print("   frontRight: ");
+  Serial.print(frontRightPingSensor.ping_cm());
   Serial.print("   backRight: ");
   Serial.print(backRightPingSensor.ping_cm());
 }
@@ -22,7 +21,6 @@ void printPingSensorReadings() {
 
 // prints all 4 encoder values
 void printEncoderValues() {
-  Serial.begin(9600);
   Serial.println();
   Serial.print("leftMotor: ");
   Serial.print(encoder_leftMotor.getRawPosition());
@@ -38,7 +36,6 @@ void printEncoderValues() {
 
 // prints the hall effect, line tracker, and IR crown sensor data
 void printSensorReadings() {
-  Serial.begin(9600);
   Serial.println();
   Serial.print("ci_hall_effect_pin: ");
   Serial.print(analogRead(ci_hall_effect_pin));

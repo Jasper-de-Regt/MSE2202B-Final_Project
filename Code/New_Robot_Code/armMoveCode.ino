@@ -24,13 +24,13 @@ bool tesseractArmScan() {
   // move arm up
   moveArm(ci_arm_carry_height);
   // wrist out?
-  sweepServo(servo_wrist, 180);
+  sweepServo(servo_wrist, ci_wrist_parallel);
   // move turntable to far left position
   moveTurntable(ci_turntable_left);
   // move arm to scanning height
   moveArm(ci_arm_scanning_height);
   // move wrist to 90 degrees down
-  sweepServo(servo_wrist, ci_wrist_down);
+  sweepServo(servo_wrist, ci_wrist_scan);
 
 
   // move turntable from left to right while polling the hall effect sensor
@@ -39,11 +39,12 @@ bool tesseractArmScan() {
   int greatestHallReading = 0;
   int greatestHallEncoderAngle = 0;
   while (encoder_rightMotor.getRawPosition() < ci_turntable_right) {
-    turntable_motor.writeMicroseconds(1600);
+    turntable_motor.writeMicroseconds(1650);
     if (analogRead(ci_hall_effect_pin) > greatestHallReading) {
       greatestHallReading = analogRead(ci_hall_effect_pin);
       greatestHallEncoderAngle = encoder_rightMotor.getRawPosition();
     }
+    
   }
   turntable_motor.writeMicroseconds(1500);
 
@@ -56,6 +57,8 @@ bool tesseractArmScan() {
     servo_magnet.write(ci_magnet_extend);
     // raise arm
     moveArm(ci_arm_carry_height);
+    // move wrist to carry
+    sweepServo(servo_wrist, ci_wrist_carry);
     // center turntable
     moveTurntable(ci_turntable_center);
     return true;
@@ -63,8 +66,12 @@ bool tesseractArmScan() {
 
   // if a non-magnetic tesseract was found, toss it to the side?
   else {
+    // move wrist to parallal
+    sweepServo(servo_wrist, ci_wrist_parallel);
     // drop arm
     moveArm(ci_arm_push_away_height);
+    // move wrist to push away
+    sweepServo(servo_wrist, ci_wrist_push_away);
     // sweep to far left
     moveTurntable(ci_turntable_left);
     // raise arm
@@ -103,16 +110,17 @@ void sweepServo(Servo servo, int desiredPosition) {
 // this is basically a basic P controller
 void moveTurntable(int desiredPosition) {
   // encoder values increase as the turntable moves to the right
+  int speedDelta = 150;
   int tolerance = 10;         // deadband tolerance, what +/- encoder value is close enough to be considered good enough?
   bool stayInFunction = true; // this is a blocking function, stay in this function until this bool is false
 
   while (stayInFunction == true) {
     // clip speeds to max speeds
-    if (moveSpeed > 1600) {
-      moveSpeed = 1600;
+    if (moveSpeed > (1500+speedDelta)) {
+      moveSpeed = (1500+speedDelta);
     }
-    else if (moveSpeed < 1400) {
-      moveSpeed = 1400;
+    else if (moveSpeed < (1500-speedDelta)) {
+      moveSpeed = (1500-speedDelta);
     }
 
     // if the turntable has been in the correct position for awhile (10 calls)
