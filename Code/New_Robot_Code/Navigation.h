@@ -2,7 +2,22 @@
 #define navigation
 
 /*
+VARS I NEED
 bool bt_holding_tesseract = false;
+const int ci_IR_crown
+unsigned int ui_num_turns
+char ch_tracking_direction
+const float cf_robot_diameter
+
+Functions I need
+driveStraightAheadEncoders()
+followWall()
+skidSteerNinetyRight()
+skidSteerNinetyLeft()
+stopDrive()
+tesseractArmScan()
+
+
 
 */
 
@@ -22,7 +37,7 @@ else if (ui_num_turns > 0) {
     }
 
     // Follow the wall from the tracking direction that corresponds to the number of turns
-    followWall(ci_drive_speed, ch_tracking_direction , ((cd_robot_diameter / 3) + cd_robot_diameter * (ui_num_turns - 1)) ); //Sets the bot to follow the wall on the right hand side
+    followWall(ci_drive_speed, ch_tracking_direction , ((cf_robot_diameter / 3) + cf_robot_diameter * (ui_num_turns - 1)) ); //Sets the bot to follow the wall on the right hand side
 
     //If proximity to wall is <= 8 cm AND the wrist bar is parallel to the ground
 
