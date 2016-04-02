@@ -147,23 +147,22 @@ void setup() {
   encoder_turntable_motor.init(1.0 / 3.0 * MOTOR_393_SPEED_ROTATIONS, MOTOR_393_TIME_DELTA);
   encoder_turntable_motor.setReversed(false);  // adjust for positive count when moving forward
 
-  encoder_turntable_motor.zero();       //Robot arm must be positioned on the standoffs to be properly zeroed
-  encoder_arm_motor.zero();
+
   delay(1000);
 }
 
 
 
-
-
-
-
-
-
-
 void loop() {
-  Serial.println(servo_magnet_motor.read());
- 
+  Serial.print("Left: ");
+  Serial.println(encoder_leftMotor.getRawPosition());
+  Serial.print("Right: ");
+  Serial.println(encoder_rightMotor.getRawPosition());
+  /*Serial.print("Arm: ");
+  Serial.println(encoder_arm_motor.getRawPosition());
+  Serial.print("Turntable: ");
+  Serial.println(encoder_turntable_motor.getRawPosition());
+  */
 }
 
 
@@ -238,13 +237,13 @@ void magnetSweep(int final_Position) {
   //high is up, low is down
   if (servo_magnet_motor.read() > final_Position) {
     for (int i = servo_magnet_motor.read(); i > final_Position; i-- ) {
-      servo_magnet_motor.write(i);   
+      servo_magnet_motor.write(i);
       delay(15);
     }
   }
   else {
     for (int i = servo_magnet_motor.read(); i < final_Position; i++) {
-      servo_magnet_motor.write(i);   
+      servo_magnet_motor.write(i);
       delay(15);
     }
   }
@@ -254,13 +253,13 @@ void wristSweep(int final_Position) {
   //
   if (servo_wrist_motor.read() > final_Position) {
     for (int i = servo_wrist_motor.read(); i > final_Position; i-- ) {
-      servo_wrist_motor.write(i);   
+      servo_wrist_motor.write(i);
       delay(15);
     }
   }
   else {
     for (int i = servo_wrist_motor.read(); i < final_Position; i++) {
-      servo_wrist_motor.write(i);   
+      servo_wrist_motor.write(i);
       delay(15);
     }
   }
@@ -368,7 +367,7 @@ void armEncoderPosition(int encoderPosition) {
 void tesseractScanSweep(int maxPosition) {
   int tesseractLocation;
   int encoderMaxHallRead = 0;
-  wristSweep.write(ci_wrist_scanning);
+  wristSweep(ci_wrist_scanning);
   //armEncoderPosition(ci_arm_horizontal_position);
   //still needs the arm height function
   for (int i = encoder_turntable_motor.getRawPosition(); i < maxPosition; i + 30) { // not sure if this is the best way to scan
