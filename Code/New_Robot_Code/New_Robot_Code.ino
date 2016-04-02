@@ -133,6 +133,7 @@ void setup() {
 
   //************************************************************************
 
+  delay(3000);
   // setup encoders. Must be initiliazed in the order that they are chained together,
   // starting with the encoder directly attached to the arduino
   encoder_leftMotor.init(1.0 / 3.0 * MOTOR_393_SPEED_ROTATIONS, MOTOR_393_TIME_DELTA);
@@ -147,8 +148,7 @@ void setup() {
   encoder_turntable_motor.init(1.0 / 3.0 * MOTOR_393_SPEED_ROTATIONS, MOTOR_393_TIME_DELTA);
   encoder_turntable_motor.setReversed(false);  // adjust for positive count when moving forward
 
-
-  delay(1000);
+  
 }
 
 
@@ -158,7 +158,8 @@ void loop() {
   Serial.println(encoder_leftMotor.getRawPosition());
   Serial.print("Right: ");
   Serial.println(encoder_rightMotor.getRawPosition());
-  /*Serial.print("Arm: ");
+  /*
+  Serial.print("Arm: ");
   Serial.println(encoder_arm_motor.getRawPosition());
   Serial.print("Turntable: ");
   Serial.println(encoder_turntable_motor.getRawPosition());
@@ -346,7 +347,7 @@ void turnTurntableEncodersPosition(int encoderPosition) {
 
 
 
-void armEncoderPosition(int encoderPosition) {
+void armEncoderPosition(int encoderPosition) { // on hold untold jasper adds P tuning
   if ((encoder_arm_motor.getRawPosition() - encoderPosition) < 0) {
     while ((encoder_arm_motor.getRawPosition() - encoderPosition) < 0) {
       arm_motor.writeMicroseconds(1600);
@@ -364,13 +365,13 @@ void armEncoderPosition(int encoderPosition) {
 
 
 
-void tesseractScanSweep(int maxPosition) {
+void tesseractScanSweep() {
   int tesseractLocation;
   int encoderMaxHallRead = 0;
   wristSweep(ci_wrist_scanning);
   //armEncoderPosition(ci_arm_horizontal_position);
   //still needs the arm height function
-  for (int i = encoder_turntable_motor.getRawPosition(); i < maxPosition; i + 30) { // not sure if this is the best way to scan
+  for (int i = encoder_turntable_motor.getRawPosition(); i < ci_turntable_right_position; i + 30) { // not sure if this is the best way to scan
     if (analogRead(ci_hall_effect) > encoderMaxHallRead) {
       tesseractLocation = encoder_turntable_motor.getRawPosition();
     }
@@ -382,7 +383,6 @@ void tesseractScanSweep(int maxPosition) {
   //armEncoderPosition(ci_arm_diagonal_position)
   //turntableEncoderPosition(ci_turntable_middle_position);
 }
-
 
 void servoMoveToPosition(Servo serv0, int final_Position) {
   long previous = millis();
