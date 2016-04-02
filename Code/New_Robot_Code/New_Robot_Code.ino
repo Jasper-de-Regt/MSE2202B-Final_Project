@@ -128,6 +128,7 @@ void setup() {
   encoder_turntable.setReversed(false);   // adjust for positive count when moving to the right
   encoder_turntable.zero();       // Robot arm must be positioned on the standoffs during powerup to be properly zeroed
   encoder_arm.zero();             // pretty sure encoders start out at 0 anyway and these calls are redundant
+  Serial.println("setup has completed");
 }//****************end setup****************end setup****************end setup****************end setup****************end setup****************
 
 
@@ -138,12 +139,15 @@ void loop() {
   //printEncoderValues();
   //printSensorReadings();
   //printPingSensorReadings();
-  followWall(1600, 'L', 10);
+
+
+
+  // followWall(1600, 'L', 10);
 
   // if tesseract detected
   if (!digitalRead(ci_IR_crown_pin)) {
     //reverse
-driveStraightAheadEncoders(1400, -100);
+    //driveStraightAheadEncoders(1400, -100);
     // sweep
 
     bool detected = tesseractArmScan();
