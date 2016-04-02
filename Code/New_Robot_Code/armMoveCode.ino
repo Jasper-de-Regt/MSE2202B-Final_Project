@@ -27,6 +27,9 @@ bool tesseractArmScan() {
   sweepServo(servo_wrist, ci_wrist_parallel);
   // move turntable to far left position
   moveTurntable(ci_turntable_left);
+  // take a hall effect reading out in the air to determine a sensor threshold
+  // this wasn't working as a global constant int, so this "calibrates" the value every fn call
+  const int ci_hall_effect_scanning_threshold = analogRead(ci_hall_effect_pin)+10;  //nothing~515, near~530
   // move arm to scanning height
   moveArm(ci_arm_scanning_height);
   // move wrist to 90 degrees down
@@ -38,21 +41,33 @@ bool tesseractArmScan() {
   // not too picky about overshooting the far right angle slightly due to arm momentum, inconsequential
   int greatestHallReading = 0;
   int greatestHallEncoderAngle = 0;
-  while (encoder_rightMotor.getRawPosition() < ci_turntable_right) {
-    turntable_motor.writeMicroseconds(1650);
+  while (encoder_turntable.getRawPosition() < ci_turntable_right) {
+    turntable_motor.writeMicroseconds(1670);
     if (analogRead(ci_hall_effect_pin) > greatestHallReading) {
       greatestHallReading = analogRead(ci_hall_effect_pin);
-      greatestHallEncoderAngle = encoder_rightMotor.getRawPosition();
+      greatestHallEncoderAngle = encoder_turntable.getRawPosition();
+      Serial.println();
+      Serial.print("new greatestHallValue: ");
+      Serial.print(greatestHallReading);
+      Serial.print("    new greatestHallEncoderAngle: ");
+      Serial.print(greatestHallEncoderAngle);
     }
-    
+    Serial.println();
+    Serial.print("inside scanning while loop, encoder value: ");
+    Serial.print(encoder_turntable.getRawPosition());
   }
   turntable_motor.writeMicroseconds(1500);
+  Serial.println();
+  Serial.print("outside while loop   greatest hall reading:");
+  Serial.print(greatestHallReading);
+  Serial.print("   greatestHallEncoderAngle: ");
+  Serial.print(greatestHallEncoderAngle);
 
   // if a magnetic tesseract was found, pick it up
   if (greatestHallReading > ci_hall_effect_scanning_threshold) {
     // move to best encoder value - offset
     // the offset is due to the hall effect sensor being beside the arm magnet
-    moveTurntable(greatestHallEncoderAngle - 0);
+    moveTurntable(greatestHallEncoderAngle - 65);
     // extend magnet
     servo_magnet.write(ci_magnet_extend);
     // raise arm
@@ -110,17 +125,17 @@ void sweepServo(Servo servo, int desiredPosition) {
 // this is basically a basic P controller
 void moveTurntable(int desiredPosition) {
   // encoder values increase as the turntable moves to the right
-  int speedDelta = 150;
+  int speedDelta = 110;
   int tolerance = 10;         // deadband tolerance, what +/- encoder value is close enough to be considered good enough?
   bool stayInFunction = true; // this is a blocking function, stay in this function until this bool is false
 
   while (stayInFunction == true) {
     // clip speeds to max speeds
-    if (moveSpeed > (1500+speedDelta)) {
-      moveSpeed = (1500+speedDelta);
+    if (moveSpeed > (1500 + speedDelta)) {
+      moveSpeed = (1500 + speedDelta);
     }
-    else if (moveSpeed < (1500-speedDelta)) {
-      moveSpeed = (1500-speedDelta);
+    else if (moveSpeed < (1500 - speedDelta)) {
+      moveSpeed = (1500 - speedDelta);
     }
 
     // if the turntable has been in the correct position for awhile (10 calls)
@@ -170,7 +185,7 @@ void moveArm(int desiredPosition) {
   while (stayInFunction == true) {
     // clip speeds to max speeds
     if (moveSpeed > 1700) {
-      moveSpeed = 1600;
+      moveSpeed = 1700;
     }
     else if ((moveSpeed < 1370) && (encoder_arm.getRawPosition() > 400)) {
       moveSpeed = 1370;

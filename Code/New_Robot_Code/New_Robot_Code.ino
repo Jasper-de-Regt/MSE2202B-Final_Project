@@ -20,7 +20,6 @@
 //************************GLOBAL VARIABLES************************
 int moveSpeed = 1500;
 int counter = 0;
-const int ci_hall_effect_scanning_threshold = 0;  // populate with a 10 bit value that would indicate a tesseract is near the arm hall effect sensor
 // servo angle constants
 const int ci_magnet_retract = 120;        //angle of servo_magnet with magnet in the "off" position
 const int ci_magnet_extend = 10;          // angle of the servo_magnet with magnet in the "on" or "pickup" position
@@ -32,7 +31,7 @@ const int ci_wrist_push_away = 35;        // wrist position to push away bad tes
 const int ci_turntable_left = 380;          // encoder ticks of the turntable at far left position
 const int ci_turntable_right = 1280;        // encoder ticks of the turntable at far right position
 const int ci_turntable_center = 800;        // encoder ticks of the turntable at center position (straight forward)
-const int ci_arm_scanning_height = 10;       // encoder ticks with the arm at a height ideal for tesseract scanning/pickup
+const int ci_arm_scanning_height = 60;       // encoder ticks with the arm at a height ideal for tesseract scanning/pickup
 const int ci_arm_carry_height = 220;          // encoder ticks with the arm at height ideal for driving around and not blocking the front ping sensor
 const int ci_arm_push_away_height = -46;      // encoder ticks with the arm dropped just above the ground, ready to push away bad tesseracts
 
@@ -136,8 +135,17 @@ void setup() {
 bool runOnce = true;
 
 void loop() {
+  //printEncoderValues();
+  //printSensorReadings();
+  //printPingSensorReadings();
+  followWall(1600, 'L', 10);
 
-  if (runOnce) {
+  // if tesseract detected
+  if (!digitalRead(ci_IR_crown_pin)) {
+    //reverse
+driveStraightAheadEncoders(1400, -100);
+    // sweep
+
     bool detected = tesseractArmScan();
     Serial.println();
     Serial.print("good tesseract: ");
