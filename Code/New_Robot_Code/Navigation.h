@@ -1,0 +1,64 @@
+#ifndef navigation
+#define navigation
+
+while (digitalRead(ci_IR_crown) != 0) {
+if (ui_num_turns == 0) { //If the robot has yet to turn
+    driveStraightAheadEncoders(ci_drive_speed, 100); //Encoder tickers corresponds to ~1.55 cm. 
+    //Won't get interrupted, but 
+    //May get interrupted by a sensor getting tripped or some other condition.
+  }
+else if (ui_num_turns > 0) {
+    if ((ui_num_turns % 2) == 1) {
+      ch_tracking_direction = 'R';
+    }
+    else if ((ui_num_turns % 2) == 0) {
+      ch_tracking_direction = 'L';
+    }
+
+    // Follow the wall from the tracking direction that corresponds to the number of turns
+    followWall(ci_drive_speed, ch_tracking_direction , ((cd_robot_diameter / 3) + cd_robot_diameter * (ui_num_turns - 1)) ); //Sets the bot to follow the wall on the right hand side
+
+    //If proximity to wall is <= 8 cm AND the wrist bar is parallel to the ground
+
+    //The ultrasonic sensor isn't reliable below 7 cm
+    if ((ui_front_distance_reading <= 8) && (servo_wrist_motor.read() >= ci_wrist_parallel)) {
+      //Do a sweep
+      // GET FUNCTION FROM MIKE
+      //
+      //
+      //
+      if ((ch_tracking_direction == 'L') || (ch_tracking_direction == 'l')) {
+        skidsteerNinetyLeft(ci_drive_speed);
+        skidsteerNinetyLeft(ci_drive_speed);
+        ui_num_turns++;
+      }
+      else if ((ch_tracking_direction == 'R') || (ch_tracking_direction == 'r')) {
+        skidsteerNinetyRight(ci_drive_speed);
+        skidsteerNinetyRight(ci_drive_speed);
+        ui_num_turns++;
+      }
+    }
+}
+}
+if (digitalRead(ci_IR_crown) == 1) {
+  stopDrive();
+  driveStraightAheadEncoders(1500-(ci_drive_speed-1500), 130); //Drives back 2 in
+  stopDrive();
+  
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#endif
