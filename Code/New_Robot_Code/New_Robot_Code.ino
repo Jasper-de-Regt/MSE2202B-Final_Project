@@ -234,6 +234,38 @@ void turnLeftSharp(int ci_drive_speed, int speedModifier) {
   left_motor.writeMicroseconds(ci_drive_speed - speedModifier * 1.5);
 }
 
+void magnetSweep(int final_Position) {
+  //high is up, low is down
+  if (servo_magnet_motor.read() > final_Position) {
+    for (int i = servo_magnet_motor.read(); i > final_Position; i-- ) {
+      servo_magnet_motor.write(i);   
+      delay(15);
+    }
+  }
+  else {
+    for (int i = servo_magnet_motor.read(); i < final_Position; i++) {
+      servo_magnet_motor.write(i);   
+      delay(15);
+    }
+  }
+}
+
+void wristSweep(int final_Position) {
+  //
+  if (servo_wrist_motor.read() > final_Position) {
+    for (int i = servo_wrist_motor.read(); i > final_Position; i-- ) {
+      servo_wrist_motor.write(i);   
+      delay(15);
+    }
+  }
+  else {
+    for (int i = servo_wrist_motor.read(); i < final_Position; i++) {
+      servo_wrist_motor.write(i);   
+      delay(15);
+    }
+  }
+}
+
 // call this to drive "straight" ahead to a new encoder value
 // for example this will drive straight ahead at speed 1600 until both motors have incremented 1000 encdoer ticks. driveStraightAheadEncoders(1600, 1000);
 // 1000 encoder ticks makes for about 15.5" or 39.4cm
@@ -336,7 +368,7 @@ void armEncoderPosition(int encoderPosition) {
 void tesseractScanSweep(int maxPosition) {
   int tesseractLocation;
   int encoderMaxHallRead = 0;
-  servo_wrist_motor.write(ci_wrist_scanning);
+  wristSweep.write(ci_wrist_scanning);
   //armEncoderPosition(ci_arm_horizontal_position);
   //still needs the arm height function
   for (int i = encoder_turntable_motor.getRawPosition(); i < maxPosition; i + 30) { // not sure if this is the best way to scan
@@ -346,48 +378,10 @@ void tesseractScanSweep(int maxPosition) {
     turnTurntableEncodersPosition(i);
   }
   turnTurntableEncodersPosition(tesseractLocation);
-  servo_magnet_motor.write(ci_magnet_down_position);
-  servo_magnet_motor.write(ci_magnet_up_position);
-  //armEncoderPosition(ci_arm_diagonal_position);
-}
-/*Serial.println("High");
-       Serial.print("i:");
-       Serial.println(i);
-       Serial.print("Current");
-       Serial.println(servo_magnet_motor.read());
-       Serial.print("Final Position");
-       Serial.println(final_Position);
-*/
-void magnetSweep(int final_Position) {
-  //high is up, low is down
-  if (servo_magnet_motor.read() > final_Position) {
-    for (int i = servo_magnet_motor.read(); i > final_Position; i-- ) {
-      servo_magnet_motor.write(i);   
-      delay(15);
-    }
-  }
-  else {
-    for (int i = servo_magnet_motor.read(); i < final_Position; i++) {
-      servo_magnet_motor.write(i);   
-      delay(15);
-    }
-  }
-}
-
-void wristSweep(int final_Position) {
-  //
-  if (servo_wrist_motor.read() > final_Position) {
-    for (int i = servo_wrist_motor.read(); i > final_Position; i-- ) {
-      servo_wrist_motor.write(i);   
-      delay(15);
-    }
-  }
-  else {
-    for (int i = servo_wrist_motor.read(); i < final_Position; i++) {
-      servo_wrist_motor.write(i);   
-      delay(15);
-    }
-  }
+  magnetSweep(ci_magnet_down_position);
+  magnetSweep(ci_magnet_up_position);
+  //armEncoderPosition(ci_arm_diagonal_position)
+  //turntableEncoderPosition(ci_turntable_middle_position);
 }
 
 
