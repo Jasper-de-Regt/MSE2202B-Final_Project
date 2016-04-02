@@ -1,127 +1,162 @@
 #include <Servo.h>
 #include <EEPROM.h>
-#include <uSTimer2.h>
-#include <CharliePlexM.h>
 #include <Wire.h>
 #include <I2CEncoder.h>
+#include <NewPing.h>
 
-/*
-  Naming conventions:
+//  Naming conventions:
+//  camelcase
+//  - E.g. itLooksLikeThis
 
-  camelcase
-  - E.g. itLooksLikeThis
+//significant words in the title should be separated by underscores "_"
+//- E.g. motor_pin_one
 
-  significant words in the title should be separated by underscores "_"
-  - E.g. motor_pin_one
+//CAPITALIZE ACRONYMS
+//- E.g. IR instead of infrared.
+//    LED instead of light_emitting_diode or lightEmittingDiode
 
-  CAPITALIZE ACRONYMS
-  - E.g. IR instead of infrared.
-       LED instead of light_emitting_diode or lightEmittingDiode
 
-*/
+//****************************************************************
+//************************GLOBAL VARIABLES************************
+int moveSpeed = 1500;
+int counter = 0;
+// servo angle constants
+const int ci_magnet_retract = 120;        //angle of servo_magnet with magnet in the "off" position
+const int ci_magnet_extend = 10;          // angle of the servo_magnet with magnet in the "on" or "pickup" position
+const int ci_wrist_scan = 20;             // angle of the servo_wrist in the max down position
+const int ci_wrist_parallel = 98;         // angle of the servo_wrist when parallel with arm
+const int ci_wrist_carry = 0;             // 0 is the correct value
+const int ci_wrist_push_away = 35;        // wrist position to push away bad tesseracts
+// encoder value constants
+const int ci_turntable_left = 380;          // encoder ticks of the turntable at far left position
+const int ci_turntable_right = 1280;        // encoder ticks of the turntable at far right position
+const int ci_turntable_center = 800;        // encoder ticks of the turntable at center position (straight forward)
+const int ci_arm_scanning_height = 60;       // encoder ticks with the arm at a height ideal for tesseract scanning/pickup
+const int ci_arm_carry_height = 220;          // encoder ticks with the arm at height ideal for driving around and not blocking the front ping sensor
+const int ci_arm_push_away_height = -46;      // encoder ticks with the arm dropped just above the ground, ready to push away bad tesseracts
 
-Servo servo_left_motor;
-Servo servo_right_motor;
-Servo servo_turntable_motor;
-Servo servo_arm_motor;
-Servo servo_wrist_motor;
-Servo servo_magnet_motor;
 
-I2CEncoder encoder_leftMotor;
-I2CEncoder encoder_rightMotor;
-I2CEncoder encoder_turntable_motor;
-I2CEncoder encoder_arm_motor;
-
-//port pin constants
-//digital pins
-const int ci_little_magnet_servo = 4;
-const int ci_big_wrist_servo = 5;
-const int ci_IR_crown = 7;  //High when no tesseract, low when tesseract
-const int ci_right_motor = 8;
-const int ci_left_motor = 9;
-const int ci_arm_motor = 10;
-const int ci_turntable_motor = 11 ;
-
-//analog pins
-const int ci_arm_linetracker = A2;
-const int ci_hall_effect = A3;
+//******************************************************************
+//************************PORT PIN CONSTANTS************************
+// servo and motor pin constants
+const int ci_magnet_servo_pin = 4;      // 157 retracted, 18 extended
+const int ci_wrist_servo_pin = 5;
+const int ci_right_motor_pin = 8;
+const int ci_left_motor_pin = 9;
+const int ci_arm_motor_pin = 10;
+const int ci_turntable_motor_pin = 11;
+// sensor pin constants, ping is synomous with ultrasonic
+const int ci_front_ping_pin = 13;
+const int ci_front_right_ping_pin = 12;
+const int ci_front_left_ping_pin = 2;
+const int ci_back_right_ping_pin = 6;
+const int ci_back_left_ping_pin = 3;
+const int ci_arm_linetracker_pin = A2;
+const int ci_hall_effect_pin = A3;
+const int ci_IR_crown_pin = 7;          //High when no tesseract, low when tesseract
+// I2C pin constants. Don't connect these pins to anything else
 const int ci_I2C_SDA = A4;         // I2C data = white
 const int ci_I2C_SCL = A5;         // I2C clock = yellow
 
-//Position constants-------Set to 0 if unknown at the moment
-//Turntable positions
-const int ci_turntable_default_position = 0;     //  Experiment to determine appropriate value
-const int ci_turntable_left_position = 400;
-const int ci_turntable_middle_position = 980;
-const int ci_turntable_right_position = 1540;
 
-//Arm positions
-const int ci_arm_vertical_position = 400;
-const int ci_arm_diagonal_position = 200;
-const int ci_arm_horizontal_position = 0;
-const int ci_arm_modetwo_dropoff = 0;
+//*******************************************************************
+//************************OBJECT DECLARATIONS************************
+// declare all servo objects
+Servo left_motor;
+Servo right_motor;
+Servo arm_motor;
+Servo turntable_motor;
+Servo servo_wrist;
+Servo servo_magnet;
+// declare all encoder objects
+I2CEncoder encoder_leftMotor;
+I2CEncoder encoder_rightMotor;
+I2CEncoder encoder_arm;
+I2CEncoder encoder_turntable;
+// setup NewPing objects (ultrasonic distance sensors);
+NewPing frontPingSensor(ci_front_ping_pin, ci_front_ping_pin, 200);
+NewPing frontRightPingSensor(ci_front_right_ping_pin, ci_front_right_ping_pin, 200);
+NewPing frontLeftPingSensor(ci_front_left_ping_pin, ci_front_left_ping_pin, 200);
+NewPing backRightPingSensor(ci_back_right_ping_pin, ci_back_right_ping_pin, 200);
+NewPing backLeftPingSensor(ci_back_left_ping_pin, ci_back_left_ping_pin, 200);
 
-//Wrist positions
-const int ci_wrist_position_vertical = 0;    //  " Wrist bar is perpendicular to the arm.
-const int ci_wrist_position_diagonal = 0;    //45 degree angle
-const int ci_wrist_position_horizontal = 0;  //  " Wrist bar is parallel to the arm.
-const int ci_wrist_modetwo_dropoff = 0;      //  "
 
-//Magnet servo positions
-const int ci_magnet_up_position = 0; // Cant pickup tesseracts
-const int ci_magnet_down_position = 0; //Will pickup tesseracts
+//*********************************************************************************************************//
+//*********************************************************************************************************//
+//*********************************************************************************************************//
+//*********************************************************************************************************//
 
-boolean bt_IRcrown_detection;                 //  " logic is backwards ie. false is positive and true is negative
-//bt_IRcrown_detection=digitalRead(ci_IR_crown); //I think
 
-//for driving
-const double cd_robot_diameter = 23.42;          //  Radius of the device ~ 23.42 mm
-char ch_tracking_direction = 'R';                //  Character value is either 'R', 'L', 'l' or 'r'
-unsigned int ui_num_turns = 0;
-const int ci_drive_speed = 1600;
 
 void setup() {
   Wire.begin();        // Wire library required for I2CEncoder library
-  Serial.begin(9600);
+  Serial.begin(9600);  // pour a bowl of serial, a special type of soup
 
 
+  //*******************************************************************
+  //************************PIN SETUPS*********************************
+  pinMode(ci_left_motor_pin, OUTPUT);
+  left_motor.attach(ci_left_motor_pin);
+  pinMode(ci_right_motor_pin, OUTPUT);
+  right_motor.attach(ci_right_motor_pin);
+  pinMode(ci_arm_motor_pin, OUTPUT);
+  arm_motor.attach(ci_arm_motor_pin);
+  pinMode(ci_turntable_motor_pin, OUTPUT);
+  turntable_motor.attach(ci_turntable_motor_pin);
+  pinMode(ci_wrist_servo_pin, OUTPUT);
+  servo_wrist.attach(ci_wrist_servo_pin);
+  pinMode(ci_magnet_servo_pin, OUTPUT);
+  servo_magnet.attach(ci_magnet_servo_pin);
+  // sensor setups
+  pinMode(ci_IR_crown_pin, INPUT);
+  pinMode(ci_arm_linetracker_pin, INPUT);
+  pinMode(ci_hall_effect_pin, INPUT);
 
-  // Pin Setup LRTA
-  //************************************************************************
 
-  pinMode(ci_left_motor, OUTPUT);
-  servo_left_motor.attach(ci_left_motor);
-
-  pinMode(ci_right_motor, OUTPUT);
-  servo_right_motor.attach(ci_right_motor);
-
-  pinMode(ci_turntable_motor, OUTPUT);
-  servo_turntable_motor.attach(ci_turntable_motor);
-
-  pinMode(ci_arm_motor, OUTPUT);
-  servo_arm_motor.attach(ci_arm_motor);
-
-  //************************************************************************
-
+  //*********************************************************************
+  //************************ENCODER SETUP*********************************
   // setup encoders. Must be initiliazed in the order that they are chained together,
   // starting with the encoder directly attached to the arduino
+  delay(3000);      // give I2C circuits a chance to boot up before attempting to make connections, fixes yellow encoder light issue
   encoder_leftMotor.init(1.0 / 3.0 * MOTOR_393_SPEED_ROTATIONS, MOTOR_393_TIME_DELTA);
-  encoder_leftMotor.setReversed(false);  // adjust for positive count when moving forward
-
+  encoder_leftMotor.setReversed(false);   // adjust for positive count when moving forward
   encoder_rightMotor.init(1.0 / 3.0 * MOTOR_393_SPEED_ROTATIONS, MOTOR_393_TIME_DELTA);
-  encoder_rightMotor.setReversed(true);  // adjust for positive count when moving forward
+  encoder_rightMotor.setReversed(true);   // adjust for positive count when moving forward
+  encoder_arm.init(1.0 / 3.0 * MOTOR_393_SPEED_ROTATIONS, MOTOR_393_TIME_DELTA);
+  encoder_arm.setReversed(false);         // adjust for positive count when moving upwards
+  encoder_turntable.init(1.0 / 3.0 * MOTOR_393_SPEED_ROTATIONS, MOTOR_393_TIME_DELTA);
+  encoder_turntable.setReversed(false);   // adjust for positive count when moving to the right
+  encoder_turntable.zero();       // Robot arm must be positioned on the standoffs during powerup to be properly zeroed
+  encoder_arm.zero();             // pretty sure encoders start out at 0 anyway and these calls are redundant
+  Serial.println("setup has completed");
+}//****************end setup****************end setup****************end setup****************end setup****************end setup****************
 
-  encoder_turntable_motor.init(1.0 / 3.0 * MOTOR_393_SPEED_ROTATIONS, MOTOR_393_TIME_DELTA);
-  encoder_turntable_motor.setReversed(false);  // adjust for positive count when moving forward
 
-  encoder_arm_motor.init(1.0 / 3.0 * MOTOR_393_SPEED_ROTATIONS, MOTOR_393_TIME_DELTA);
-  encoder_arm_motor.setReversed(true);  // adjust for positive count when turning clockwise
 
-  encoder_turntable_motor.zero();       //Robot arm must be positioned on the standoffs to be properly zeroed
-  encoder_arm_motor.zero();
-}
+bool runOnce = true;
 
 void loop() {
-  // put your main code here, to run repeatedly:
+  //printEncoderValues();
+  //printSensorReadings();
+  //printPingSensorReadings();
 
+
+
+  // followWall(1600, 'L', 10);
+
+  // if tesseract detected
+  if (!digitalRead(ci_IR_crown_pin)) {
+    //reverse
+    //driveStraightAheadEncoders(1400, -100);
+    // sweep
+
+    bool detected = tesseractArmScan();
+    Serial.println();
+    Serial.print("good tesseract: ");
+    Serial.print(detected);
+    runOnce = false;
+  }
 }
+
+
+
