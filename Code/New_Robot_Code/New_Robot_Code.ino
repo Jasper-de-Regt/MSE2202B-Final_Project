@@ -79,6 +79,8 @@ const int ci_wrist_scanning = 25;
 const int ci_magnet_up_position = 157; // Cant pickup tesseracts
 const int ci_magnet_down_position = 18; //Will pickup tesseracts
 
+const int ci_hall_effect_scanning_threshold = 20; //this is a minimum
+
 boolean bt_IRcrown_detection;                 //  " logic is backwards ie. false is positive and true is negative
 //bt_IRcrown_detection=digitalRead(ci_IR_crown); //I think
 
@@ -88,6 +90,9 @@ const float cd_robot_diameter = 23.42;          //  Radius of the device ~ 23.42
 char ch_tracking_direction = 'R';                //  Character value is either 'R', 'L', 'l' or 'r'
 
 unsigned int ui_num_turns = 0;
+
+unsigned int moveSpeed=1500;
+int counter=0;
 
 const int ci_drive_speed = 1600;
 
@@ -148,7 +153,7 @@ void setup() {
   encoder_turntable_motor.init(1.0 / 3.0 * MOTOR_393_SPEED_ROTATIONS, MOTOR_393_TIME_DELTA);
   encoder_turntable_motor.setReversed(false);  // adjust for positive count when moving forward
 
-  
+
 }
 
 
@@ -159,10 +164,10 @@ void loop() {
   Serial.print("Right: ");
   Serial.println(encoder_rightMotor.getRawPosition());
   /*
-  Serial.print("Arm: ");
-  Serial.println(encoder_arm_motor.getRawPosition());
-  Serial.print("Turntable: ");
-  Serial.println(encoder_turntable_motor.getRawPosition());
+    Serial.print("Arm: ");
+    Serial.println(encoder_arm_motor.getRawPosition());
+    Serial.print("Turntable: ");
+    Serial.println(encoder_turntable_motor.getRawPosition());
   */
 }
 
@@ -495,3 +500,213 @@ void followWall(int ci_drive_speed, char wallSide, int desiredDistance) {
   }                                                             // end of   if (wallside=='l')
 }
 
+
+
+
+
+
+
+
+
+
+
+//****************************************************************************//
+//****************************************************************************//
+//******************************** NOTES *************************************//
+//*** List of functions in this header file:
+//***
+//*** void sweepServo(Servo servo, int desiredPosition);   // pass the desired position as an angle
+//*** void moveTurntable(int desiredPosition)              // pass the desiredPosition as an encoder value
+//*** void moveArm(int desiredPosition)                    // pass the desiredPosition as an encoder value
+//*** bool tesseractArmScan();                             // scans with arm for tesseract, picks tesseract up or pushes it aside
+
+
+
+
+
+
+// this function will move the arm to left at a scanning height with the magnet retracted
+// it will then sweep the arm to the right while scanning with the hall effect sensor
+// the greatest hall effect angle is stored
+// if a magnetic field was detected, the arm will turn to that position, extend the magnet, raise/center the arm, and return true
+// if a magnetic field was not detected, the arm will drop, sweep left in an attempt to knock away the bad tesseract, and return false
+bool tesseractArmScan() {
+  // retract magnet
+  servo_magnet_motor.write(ci_magnet_up_position);
+  // move arm up
+  moveArm(ci_arm_diagonal_position);
+  // wrist out?
+  sweepServo(servo_wrist_motor, 180);
+  // move turntable to far left position
+  moveTurntable(ci_turntable_left_position);
+  // move arm to scanning height----horizontal is scanning height+- 5/10 encoder ticks
+  moveArm(ci_arm_horizontal_position);
+  // move wrist to 90 degrees down
+  sweepServo(servo_wrist_motor, ci_wrist_scanning);
+
+
+  // move turntable from left to right while polling the hall effect sensor
+  // store the greatest hall effect value and remmeber at which encoder angle it occurs
+  // not too picky about overshooting the far right angle slightly due to arm momentum, inconsequential
+  int greatestHallReading = 0;
+  int greatestHallEncoderAngle = 0;
+  while (encoder_rightMotor.getRawPosition() < ci_turntable_right_position) {
+    turntable_motor.writeMicroseconds(1600);
+    if (analogRead(ci_hall_effect) > greatestHallReading) {
+      greatestHallReading = analogRead(ci_hall_effect);
+      greatestHallEncoderAngle = encoder_rightMotor.getRawPosition();
+    }
+  }
+  turntable_motor.writeMicroseconds(1500);
+
+  // if a magnetic tesseract was found, pick it up
+  if (greatestHallReading > ci_hall_effect_scanning_threshold) {
+    // move to best encoder value - offset
+    // the offset is due to the hall effect sensor being beside the arm magnet
+    moveTurntable(greatestHallEncoderAngle - 0);
+    // extend magnet
+    servo_magnet_motor.write(ci_magnet_down_position);
+    // raise arm
+    moveArm(ci_arm_diagonal_position);
+    // center turntable
+    moveTurntable(ci_turntable_middle_position);
+    return true;
+  }
+
+  // if a non-magnetic tesseract was found, toss it to the side?
+  else {
+    // drop arm
+    moveArm(ci_arm_horizontal_position);
+    // sweep to far left
+    moveTurntable(ci_turntable_left_position);
+    return false;
+  }
+}
+
+
+// this function sweeps (slowly moves) a servo to a new position
+// this is a blocking function, the function will not return until finished sweeping to the desiredPosition
+// keep in mind a servo has no position fedback to a microcontroller, there is no way to see if the servo is stalled
+void sweepServo(Servo servo, int desiredPosition) {
+  if (servo.read() < desiredPosition) {   // if the servo angle needs to increase
+    for (int position = servo.read(); position < desiredPosition; position++) {
+      servo.write(position);
+      delay(15);
+    }
+  }
+  else {                                  // else if the servo angle needs to decrease
+    for (int position = servo.read(); position > desiredPosition; position--) {
+      servo.write(position);
+      delay(15);
+    }
+  }
+}//****************end of sweepServo fn****************end of sweepServo fn****************
+
+
+
+
+
+// this function moves the turntable to a new encoder value.
+// this is a blocking function, it won't return until the turntable has been in the correct position for awhile
+// this is basically a basic P controller
+void moveTurntable(int desiredPosition) {
+  // encoder values increase as the turntable moves to the right
+  int tolerance = 10;         // deadband tolerance, what +/- encoder value is close enough to be considered good enough?
+  bool stayInFunction = true; // this is a blocking function, stay in this function until this bool is false
+
+  while (stayInFunction == true) {
+    // clip speeds to max speeds
+    if (moveSpeed > 1600) {
+      moveSpeed = 1600;
+    }
+    else if (moveSpeed < 1400) {
+      moveSpeed = 1400;
+    }
+
+    // if the turntable has been in the correct position for awhile (10 calls)
+    // stop motor, set stayInFunction to false
+    if (counter > 10) {
+      moveSpeed = 1500;
+      turntable_motor.writeMicroseconds(moveSpeed);
+      stayInFunction = false;
+    }
+    // if its in the correct position, don't move and increment counter
+    else if ((encoder_turntable_motor.getRawPosition() < (desiredPosition + tolerance)) && (encoder_turntable_motor.getRawPosition() > (desiredPosition - tolerance))) {
+      turntable_motor.writeMicroseconds(1500);
+      counter++;
+      delay(3);
+      stayInFunction = true;
+    }
+    // if it needs to move to the right
+    else if (encoder_turntable_motor.getRawPosition() < desiredPosition) {
+      moveSpeed++;
+      turntable_motor.writeMicroseconds(moveSpeed);
+      counter = 0;
+      stayInFunction = true;
+    }
+    //else if it needs to move to the left
+    else if (encoder_turntable_motor.getRawPosition() > desiredPosition) {
+      moveSpeed--;
+      turntable_motor.writeMicroseconds(moveSpeed);
+      counter = 0;
+      stayInFunction = true;
+    }
+  }
+  counter = 0;
+}//****************end moveTurntable fn****************end moveTurntable fn****************
+
+
+
+
+
+// this function moves the arm to a new encoder value.
+// this is a blocking function, it won't return until the arm has been in the correct position for awhile
+// this is basically a basic P controller
+void moveArm(int desiredPosition) {
+  // encoder values increase as the arm moves up
+  int tolerance = 10;         // deadband tolerance, what +/- encoder value is close enough to be considered good enough?
+  bool stayInFunction = true; // this is a blocking function, stay in this function until this bool is false
+
+  while (stayInFunction == true) {
+    // clip speeds to max speeds
+    if (moveSpeed > 1700) {
+      moveSpeed = 1600;
+    }
+    else if ((moveSpeed < 1370) && (encoder_arm_motor.getRawPosition() > 400)) {
+      moveSpeed = 1370;
+    }
+    else if ((moveSpeed < 1450) && (encoder_arm_motor.getRawPosition() < 200)) {
+      moveSpeed = 1450;
+    }
+
+    // if the arm has been in the correct position for awhile (10 calls)
+    // stop motor, set stayInFunction to false
+    if (counter > 10) {
+      moveSpeed = 1500;
+      arm_motor.writeMicroseconds(moveSpeed);
+      stayInFunction = false;
+    }
+    // if its in the correct position, don't move and increment counter
+    else if ((encoder_arm_motor.getRawPosition() < (desiredPosition + tolerance)) && (encoder_arm_motor.getRawPosition() > (desiredPosition - tolerance))) {
+      arm_motor.writeMicroseconds(1500);
+      counter++;
+      delay(3);
+      stayInFunction = true;
+    }
+    // if it needs to move to the right
+    else if (encoder_arm_motor.getRawPosition() < desiredPosition) {
+      moveSpeed++;
+      arm_motor.writeMicroseconds(moveSpeed);
+      counter = 0;
+      stayInFunction = true;
+    }
+    //else if it needs to move to the left
+    else if (encoder_arm_motor.getRawPosition() > desiredPosition) {
+      moveSpeed--;
+      arm_motor.writeMicroseconds(moveSpeed);
+      counter = 0;
+      stayInFunction = true;
+    }
+  }
+  counter = 0;
+}//****************end moveArm fn****************end moveArm fn****************
