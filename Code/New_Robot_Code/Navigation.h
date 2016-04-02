@@ -1,7 +1,13 @@
 #ifndef navigation
 #define navigation
 
-while (digitalRead(ci_IR_crown) != 0) {
+/*
+bool bt_holding_tesseract = false;
+
+*/
+
+
+while ((digitalRead(ci_IR_crown) != 0) && (!bt_holding_tesseract)) {
 if (ui_num_turns == 0) { //If the robot has yet to turn
     driveStraightAheadEncoders(ci_drive_speed, 100); //Encoder tickers corresponds to ~1.55 cm. 
     //Won't get interrupted, but 
@@ -44,10 +50,53 @@ if (digitalRead(ci_IR_crown) == 1) {
   stopDrive();
   driveStraightAheadEncoders(1500-(ci_drive_speed-1500), 130); //Drives back 2 in
   stopDrive();
-  
+  tesseractScanSweep(ci_turntable_right);
+  tesseractScanSweep(ci_turntable_left);
+
+  //May need to add function -> turntableEncoders with different arm height to sweep bad tesseracts
 }
 
+if (bt_holding_tesseract) {
+/*
+Make sure the arm is up.
+*/
 
+  if (ui_num_turns  == 0){
+    //Should turn 180 degrees on the spot
+    skidsteerNinetyRight(ci_drive_speed);
+    skidsteerNinetyRight(ci_drive_speed);
+  }
+  else if (ui_num_turns > 0) {
+    //Turn back toward the wall
+    if ((ch_tracking_direction == 'l') || (ch_tracking_direction == 'L')) {
+      skidsteerNinetyLeft(ci_drive_speed);
+    }
+    else if ((ch_tracking_direction == 'r') || (ch_tracking_direction == 'R')) {
+      skidsteerNinetyRight(ci_drive_speed);
+    }
+
+    //If away from the wall, drive toward the wall
+    while (frontSensorData.ping_cm() >= 8) {
+      driveStraightAheadEncoders(ci_drive_speed, 50); //Drive forward a half inch
+    }
+
+    //Turn left to face the origin
+    skidsteerNinetyLeft(ci_drive_speed);
+
+    //Drive toward the wall.
+    while (frontSensorData.ping_cm() >= 8) {
+      driveStraightAheadEncoders(ci_drive_speed, 50); //Drive forward a half inch
+    }
+
+    //When you get to the origin (roughly speaking), stop driving.
+    stopDrive();
+
+    //Turn 180
+    skidsteerNinetyRight(ci_drive_speed);
+    skidsteerNinetyRight(ci_drive_speed);
+
+  }
+}
 
 
 
