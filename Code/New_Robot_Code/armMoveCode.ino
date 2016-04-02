@@ -19,18 +19,15 @@
 // if a magnetic field was detected, the arm will turn to that position, extend the magnet, raise/center the arm, and return true
 // if a magnetic field was not detected, the arm will drop, sweep left in an attempt to knock away the bad tesseract, and return false
 bool tesseractArmScan() {
-  // retract magnet
-  servo_magnet.write(ci_magnet_retract);
-  // move arm up
-  moveArm(ci_arm_carry_height);
-  // wrist out?
-  sweepServo(servo_wrist, ci_wrist_parallel);
-  // move turntable to far left position
-  moveTurntable(ci_turntable_left);
+  servo_magnet.write(ci_magnet_retract);  // retract magnet
+  moveArm(ci_arm_carry_height);  // move arm up
+  sweepServo(servo_wrist, ci_wrist_parallel);  // wrist out?
+  moveTurntable(ci_turntable_left);  // move turntable to far left position
   // take a hall effect reading out in the air to determine a sensor threshold
   // this wasn't working as a global constant int, so this "calibrates" the value every fn call
-  const int ci_hall_effect_scanning_threshold_max = analogRead(ci_hall_effect_pin) + 7; //nothing~515, value goes up or down depending on field orientation
-  const int ci_hall_effect_scanning_threshold_min = analogRead(ci_hall_effect_pin) - 7;
+  const int tolerance = 9; //tolerance on the hall effect readings
+  const int ci_hall_effect_scanning_threshold_max = analogRead(ci_hall_effect_pin) + tolerance; //nothing~515, value goes up or down depending on field orientation
+  const int ci_hall_effect_scanning_threshold_min = analogRead(ci_hall_effect_pin) - tolerance;
   Serial.println();
   Serial.print("ci_hall_effect_scanning_threshold_max: ");
   Serial.print(ci_hall_effect_scanning_threshold_max);
@@ -49,23 +46,28 @@ bool tesseractArmScan() {
   int tesseractReading = 0;
   int tesseractAngle = 0;
   bool tesseractDetected = false;
+  int maxFieldStrength = tolerance;
 
   while (encoder_turntable.getRawPosition() < ci_turntable_right) {
-    turntable_motor.writeMicroseconds(1670);
+    turntable_motor.writeMicroseconds(1670);    // slew turntable right
 
-    // if a tesseract is detected during the sweep
+    // if a hall effect reading outside of threshold is reached
     int reading = analogRead(ci_hall_effect_pin);
     if ((reading < ci_hall_effect_scanning_threshold_min) || (reading > ci_hall_effect_scanning_threshold_max)) {
-      tesseractDetected = true;
-      tesseractReading = analogRead(ci_hall_effect_pin);
-      tesseractAngle = encoder_turntable.getRawPosition();
-      Serial.println();
-      Serial.print("new tesseractReading: ");
-      Serial.print(tesseractReading);
-      Serial.print("    new tesseractAngle: ");
-      Serial.print(tesseractAngle);
-    }
 
+      // if this is the strongest field detected so far
+      if ((abs(reading - (ci_hall_effect_scanning_threshold_max - tolerance))) > maxFieldStrength) {
+        maxFieldStrength = abs(reading - (ci_hall_effect_scanning_threshold_max - tolerance));
+        tesseractDetected = true;
+        tesseractReading = analogRead(ci_hall_effect_pin);
+        tesseractAngle = encoder_turntable.getRawPosition();
+        Serial.println();
+        Serial.print("new tesseractReading: ");
+        Serial.print(tesseractReading);
+        Serial.print("    new tesseractAngle: ");
+        Serial.print(tesseractAngle);
+      }
+    }
     Serial.println();
     Serial.print("inside scanning while loop, encoder value: ");
     Serial.print(encoder_turntable.getRawPosition());
@@ -81,9 +83,9 @@ bool tesseractArmScan() {
 
   // if a magnetic tesseract was found, pick it up
   if (tesseractDetected) {
-
-    moveTurntable(tesseractAngle - 65); // move to best encoder value - offset, offset is due to the hall effect sensor being beside the arm magnet
+    moveTurntable(tesseractAngle - 80); // move to best encoder value - offset, offset is due to the hall effect sensor being beside the arm magnet
     servo_magnet.write(ci_magnet_extend);         // extend magnet
+    delay(200);                                   // give magnet time to slide over
     moveArm(ci_arm_carry_height);                 // raise arm
     sweepServo(servo_wrist, ci_wrist_carry);      // move wrist to carry
     moveTurntable(ci_turntable_center);           // center turntable

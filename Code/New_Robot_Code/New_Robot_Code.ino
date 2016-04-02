@@ -23,7 +23,7 @@ int counter = 0;
 // servo angle constants
 const int ci_magnet_retract = 120;        //angle of servo_magnet with magnet in the "off" position
 const int ci_magnet_extend = 10;          // angle of the servo_magnet with magnet in the "on" or "pickup" position
-const int ci_wrist_scan = 20;             // angle of the servo_wrist in the max down position
+const int ci_wrist_scan = 10;             // angle of the servo_wrist in the max down position
 const int ci_wrist_parallel = 98;         // angle of the servo_wrist when parallel with arm
 const int ci_wrist_carry = 0;             // 0 is the correct value
 const int ci_wrist_push_away = 35;        // wrist position to push away bad tesseracts
@@ -31,7 +31,7 @@ const int ci_wrist_push_away = 35;        // wrist position to push away bad tes
 const int ci_turntable_left = 380;          // encoder ticks of the turntable at far left position
 const int ci_turntable_right = 1280;        // encoder ticks of the turntable at far right position
 const int ci_turntable_center = 800;        // encoder ticks of the turntable at center position (straight forward)
-const int ci_arm_scanning_height = 60;       // encoder ticks with the arm at a height ideal for tesseract scanning/pickup
+const int ci_arm_scanning_height = 20;       // encoder ticks with the arm at a height ideal for tesseract scanning/pickup
 const int ci_arm_carry_height = 220;          // encoder ticks with the arm at height ideal for driving around and not blocking the front ping sensor
 const int ci_arm_push_away_height = -46;      // encoder ticks with the arm dropped just above the ground, ready to push away bad tesseracts
 
@@ -136,7 +136,7 @@ void setup() {
 bool runOnce = true;
 
 void loop() {
-  //printEncoderValues();
+  printEncoderValues();
   //printSensorReadings();
   //printPingSensorReadings();
 
@@ -144,10 +144,18 @@ void loop() {
 
   // followWall(1600, 'L', 10);
 
+if (runOnce) {
+    driveStraight(1650);
+  }
+
+
   // if tesseract detected
   if (!digitalRead(ci_IR_crown_pin)) {
+    runOnce = false;
+    stopDrive();
+
     //reverse
-    //driveStraightAheadEncoders(1400, -100);
+    driveStraightReverseEncoders(1300, -140);
     // sweep
 
     bool detected = tesseractArmScan();

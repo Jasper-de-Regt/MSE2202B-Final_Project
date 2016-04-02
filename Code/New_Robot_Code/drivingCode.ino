@@ -48,6 +48,22 @@ void turnLeftSharp(int ci_drive_speed, int speedModifier) {
 
 
 
+// call this to drive "straight" reverse to a new encoder value
+// for example this will drive straight back at speed 1400 until both motors have incremented -1000 encoder ticks:
+// driveStraightAheadEncoders(1400, -1000);
+// 1000 encoder ticks makes for about 15.5" or 39.4cm
+void driveStraightReverseEncoders(int ci_drive_speed, int encoderTicks) {
+  encoder_rightMotor.zero();      // 0 both encoders
+  encoder_leftMotor.zero();
+  while ((encoder_rightMotor.getRawPosition() > encoderTicks) || (encoder_leftMotor.getRawPosition() > encoderTicks)) {      // drive ahead to encoder value
+    right_motor.writeMicroseconds(ci_drive_speed);
+    left_motor.writeMicroseconds(ci_drive_speed);
+  }
+  stopDrive();
+}//****************end of driveStraightAHeadEncoders****************end of driveStraightAHeadEncoders****************
+
+
+
 // call this to drive "straight" ahead to a new encoder value
 // for example this will drive straight ahead at speed 1600 until both motors have incremented 1000 encoder ticks:
 // driveStraightAheadEncoders(1600, 1000);
