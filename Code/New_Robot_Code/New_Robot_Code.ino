@@ -114,7 +114,7 @@ void setup() {
   encoder_rightMotor.init(1.0 / 3.0 * MOTOR_393_SPEED_ROTATIONS, MOTOR_393_TIME_DELTA);
   encoder_rightMotor.setReversed(true);  // adjust for positive count when moving forward
   encoder_arm.init(1.0 / 3.0 * MOTOR_393_SPEED_ROTATIONS, MOTOR_393_TIME_DELTA);
-  encoder_arm.setReversed(true);  // adjust for positive count when turning clockwise
+  encoder_arm.setReversed(false);  // adjust for positive count when turning clockwise
   encoder_turntable.init(1.0 / 3.0 * MOTOR_393_SPEED_ROTATIONS, MOTOR_393_TIME_DELTA);
   encoder_turntable.setReversed(false);  // adjust for positive count when moving forward
   encoder_turntable.zero();       //Robot arm must be positioned on the standoffs to be properly zeroed
@@ -127,7 +127,7 @@ void setup() {
 
 void loop() {
 //arm_motor.write(130);
-
+/*
 Serial.println(encoder_turntable.getRawPosition());
 moveTurntable(800);
 Serial.println("BACK IN MAINNNNNNNNN");
@@ -136,10 +136,16 @@ Serial.println(encoder_turntable.getRawPosition());
 moveTurntable(100);
 delay(2000);
 
-moveArm(50);
+moveArm(0);
 delay(2000);
-moveArm(200);
+moveArm(400);
 delay(2000);
+*/
+
+Serial.println();
+Serial.print(encoder_arm.getRawPosition());
+Serial.print(encoder_turntable.getRawPosition());
+
 
 }
 

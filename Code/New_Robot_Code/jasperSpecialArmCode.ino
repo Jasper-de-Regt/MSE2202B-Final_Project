@@ -20,7 +20,7 @@ void moveTurntable(int desiredPosition) {
     // if the turntable has been in the correct position for awhile (10 calls)
     // stop motor, set stayInFunction to false
     if (counter > 10) {
-      moveSpeed=1500;
+      moveSpeed = 1500;
       turntable_motor.writeMicroseconds(moveSpeed);
       stayInFunction = false;
     }
@@ -63,23 +63,26 @@ void moveArm(int desiredPosition) {
   int tolerance = 10;         // deadband tolerance, what +/- encoder value is close enough?
   bool stayInFunction = true; // this is a blocking function, stay in this function until this bool is false
 
-Serial.println();
-Serial.print("arm encoder: ");
-Serial.print(encoder_arm.getRawPosition());
+  Serial.println();
+  Serial.print("arm encoder: ");
+  Serial.print(encoder_arm.getRawPosition());
 
   while (stayInFunction == true) {
     // clip speeds to max speeds
     if (moveSpeed > 1700) {
       moveSpeed = 1600;
     }
-    else if (moveSpeed < 1450) {
+    else if ((moveSpeed < 1370)&&(encoder_arm.getRawPosition()>400)){
+      moveSpeed=1370;
+    }
+    else if ((moveSpeed<1450)&&(encoder_arm.getRawPosition()<200)){
       moveSpeed = 1450;
     }
 
     // if the arm has been in the correct position for awhile (10 calls)
     // stop motor, set stayInFunction to false
     if (counter > 10) {
-      moveSpeed=1500;
+      moveSpeed = 1500;
       arm_motor.writeMicroseconds(moveSpeed);
       stayInFunction = false;
     }
