@@ -40,7 +40,6 @@ const int ci_arm_push_away_height = 0;  // encoder ticks with the arm dropped ju
 // servo and motor pin constants
 const int ci_magnet_servo_pin = 4;      // 157 retracted, 18 extended
 const int ci_wrist_servo_pin = 5;
-const int ci_IR_crown_pin = 7;          //High when no tesseract, low when tesseract
 const int ci_right_motor_pin = 8;
 const int ci_left_motor_pin = 9;
 const int ci_arm_motor_pin = 10;
@@ -51,8 +50,9 @@ const int ci_front_right_ping_pin = 12;
 const int ci_front_left_ping_pin = 2;
 const int ci_back_right_ping_pin = 6;
 const int ci_back_left_ping_pin = 3;
-const int ci_arm_linetracker = A2;
-const int ci_hall_effect = A3;
+const int ci_arm_linetracker_pin = A2;
+const int ci_hall_effect_pin = A3;
+const int ci_IR_crown_pin = 7;          //High when no tesseract, low when tesseract
 // I2C pin constants. Don't connect these pins to anything else
 const int ci_I2C_SDA = A4;         // I2C data = white
 const int ci_I2C_SCL = A5;         // I2C clock = yellow
@@ -108,8 +108,8 @@ void setup() {
   servo_magnet.attach(ci_magnet_servo_pin);
   // sensor setups
   pinMode(ci_IR_crown_pin, INPUT);
-  pinMode(ci_arm_linetracker, INPUT);
-  pinMode(ci_hall_effect, INPUT);
+  pinMode(ci_arm_linetracker_pin, INPUT);
+  pinMode(ci_hall_effect_pin, INPUT);
 
 
   //*********************************************************************
@@ -150,9 +150,7 @@ void loop() {
     delay(2000);
   */
 
-  Serial.println();
-  Serial.print(encoder_arm.getRawPosition());
-  Serial.print(encoder_turntable.getRawPosition());
+  printEncoderValues();
 
 
 }

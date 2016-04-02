@@ -44,7 +44,7 @@ void tesseractScanSweep(int maxPosition) {
   int tesseractLocation;
   int encoderMaxHallRead = 0;
   for (int i = encoder_turntable.getRawPosition(); i < maxPosition; i + 30) { // not sure if this is the best way to scan
-    if (analogRead(ci_hall_effect) > encoderMaxHallRead) {
+    if (analogRead(ci_hall_effect_pin) > encoderMaxHallRead) {
       tesseractLocation = encoder_turntable.getRawPosition();
     }
     turnTurntableEncodersPosition(i);

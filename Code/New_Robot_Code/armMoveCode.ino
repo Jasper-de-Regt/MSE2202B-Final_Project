@@ -40,8 +40,8 @@ bool tesseractArmScan() {
   int greatestHallEncoderAngle = 0;
   while (encoder_rightMotor.getRawPosition() < ci_turntable_right) {
     turntable_motor.writeMicroseconds(1600);
-    if (analogRead(ci_hall_effect) > greatestHallReading) {
-      greatestHallReading = analogRead(ci_hall_effect);
+    if (analogRead(ci_hall_effect_pin) > greatestHallReading) {
+      greatestHallReading = analogRead(ci_hall_effect_pin);
       greatestHallEncoderAngle = encoder_rightMotor.getRawPosition();
     }
   }
