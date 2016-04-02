@@ -1,3 +1,4 @@
+//Michael Functions
 
 void stopTurntable() {
   turntable_motor.writeMicroseconds(1500);
@@ -39,44 +40,6 @@ void armEncoderPosition(int encoderPosition) {
   stopArm();
 }
 
-/*
-// scans for fluctuating magnetic field to see if there is a magnetic tesseract, return true if true
-
-void tesseractScanSweep() {
-  int tesseractLocation;
-  int encoderMaxHallRead = 0;
-  wristSweep(ci_wrist_scanning);
-  //armEncoderPosition(ci_arm_horizontal_position);
-  //still needs the arm height function
-  for (int i = encoder_turntable_motor.getRawPosition(); i < ci_turntable_right_position; i + 30) { // not sure if this is the best way to scan
-    if (analogRead(ci_hall_effect_pin) > encoderMaxHallRead) {
-      tesseractLocation = encoder_turntable_motor.getRawPosition();
-    }
-    turnTurntableEncodersPosition(i);
-  }
-  turnTurntableEncodersPosition(tesseractLocation);
-  magnetSweep(ci_magnet_down_position);
-  magnetSweep(ci_magnet_up_position);
-  //armEncoderPosition(ci_arm_diagonal_position)
-  //turntableEncoderPosition(ci_turntable_middle_position);
-}
-*///had to remove due to play in gears without PID
-
-
-void servoMoveToPosition(Servo serv0, int final_Position) {
-  long previous = millis();
-  while (serv0.read() != final_Position) {
-//    if ((millis() - previous) >= timeDifference) {
-      if (serv0.read() > final_Position) {
-        serv0.write(serv0.read() - 1);
-      }
-      if (serv0.read() < final_Position) {
-        serv0.write(serv0.read() + 1);
-      }
-      previous = millis();
-    }
-  }
-
 
 void magnetSweep(int final_Position) {
   //high is up, low is down
@@ -109,4 +72,60 @@ void wristSweep(int final_Position) {
     }
   }
 }
+
+/*
+// scans for fluctuating magnetic field to see if there is a magnetic tesseract, return true if true
+
+void tesseractScanSweep() {
+  int tesseractLocation;
+  int encoderMaxHallRead = 0;
+  wristSweep(ci_wrist_scanning);
+  //armEncoderPosition(ci_arm_horizontal_position);
+  //still needs the arm height function
+  for (int i = encoder_turntable_motor.getRawPosition(); i < ci_turntable_right_position; i + 30) { // not sure if this is the best way to scan
+    if (analogRead(ci_hall_effect_pin) > encoderMaxHallRead) {
+      tesseractLocation = encoder_turntable_motor.getRawPosition();
+    }
+    turnTurntableEncodersPosition(i);
+  }
+  turnTurntableEncodersPosition(tesseractLocation);
+  magnetSweep(ci_magnet_down_position);
+  magnetSweep(ci_magnet_up_position);
+  //armEncoderPosition(ci_arm_diagonal_position)
+  //turntableEncoderPosition(ci_turntable_middle_position);
+}
+*///had to remove due to play in gears without PID
+
+
+
+
+
+
+
+
+
+
+
+
+
+////////////////////////////////////////////////////////////////////////////////////////////
+//Chris Functions
+
+
+
+void servoMoveToPosition(Servo serv0, int final_Position) {
+  long previous = millis();
+  while (serv0.read() != final_Position) {
+//    if ((millis() - previous) >= timeDifference) {
+      if (serv0.read() > final_Position) {
+        serv0.write(serv0.read() - 1);
+      }
+      if (serv0.read() < final_Position) {
+        serv0.write(serv0.read() + 1);
+      }
+      previous = millis();
+    }
+  }
+
+
 
