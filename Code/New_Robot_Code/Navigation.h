@@ -50,8 +50,9 @@ if (digitalRead(ci_IR_crown) == 1) {
   stopDrive();
   driveStraightAheadEncoders(1500-(ci_drive_speed-1500), 130); //Drives back 2 in
   stopDrive();
-  tesseractScanSweep(ci_turntable_right);
-  tesseractScanSweep(ci_turntable_left);
+  //tesseractScanSweep(ci_turntable_right);
+  //tesseractScanSweep(ci_turntable_left);
+  tesseractArmScan();
 
   //May need to add function -> turntableEncoders with different arm height to sweep bad tesseracts
 }
