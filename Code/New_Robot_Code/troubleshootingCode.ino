@@ -29,9 +29,9 @@ void printEncoderValues() {
   Serial.print("   rightMotor: ");
   Serial.print(encoder_rightMotor.getRawPosition());
   Serial.print("   arm: ");
-  Serial.print(encoder_arm.getRawPosition());
+  Serial.print(encoder_arm_motor.getRawPosition());
   Serial.print("   turntable: ");
-  Serial.print(encoder_turntable.getRawPosition());
+  Serial.print(encoder_turntable_motor.getRawPosition());
 }
 
 

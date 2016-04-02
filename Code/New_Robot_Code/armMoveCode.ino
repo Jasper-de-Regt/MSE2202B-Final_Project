@@ -22,15 +22,15 @@ bool tesseractArmScan() {
   // retract magnet
   servo_magnet.write(ci_magnet_retract);
   // move arm up
-  moveArm(ci_arm_carry_height);
+  moveArm(ci_arm_diagonal_position);
   // wrist out?
   sweepServo(servo_wrist, 180);
   // move turntable to far left position
-  moveTurntable(ci_turntable_left);
-  // move arm to scanning height
-  moveArm(ci_arm_scanning_height);
+  moveTurntable(ci_turntable_left_position);
+  // move arm to scanning height----horizontal is scanning height+- 5/10 encoder ticks
+  moveArm(ci_arm_horizontal_position);
   // move wrist to 90 degrees down
-  sweepServo(servo_wrist, ci_wrist_down);
+  sweepServo(servo_wrist, ci_wrist_scanning);
 
 
   // move turntable from left to right while polling the hall effect sensor
@@ -38,7 +38,7 @@ bool tesseractArmScan() {
   // not too picky about overshooting the far right angle slightly due to arm momentum, inconsequential
   int greatestHallReading = 0;
   int greatestHallEncoderAngle = 0;
-  while (encoder_rightMotor.getRawPosition() < ci_turntable_right) {
+  while (encoder_rightMotor.getRawPosition() < ci_turntable_right_position) {
     turntable_motor.writeMicroseconds(1600);
     if (analogRead(ci_hall_effect_pin) > greatestHallReading) {
       greatestHallReading = analogRead(ci_hall_effect_pin);
@@ -55,18 +55,18 @@ bool tesseractArmScan() {
     // extend magnet
     servo_magnet.write(ci_magnet_extend);
     // raise arm
-    moveArm(ci_arm_carry_height);
+    moveArm(ci_arm_diagonal_position);
     // center turntable
-    moveTurntable(ci_turntable_center);
+    moveTurntable(ci_turntable_center_position);
     return true;
   }
 
   // if a non-magnetic tesseract was found, toss it to the side?
   else {
     // drop arm
-    moveArm(ci_arm_push_away_height);
+    moveArm(ci_arm_horizontal_position);
     // sweep to far left
-    moveTurntable(ci_turntable_left);
+    moveTurntable(ci_turntable_left_position);
     return false;
   }
 }
@@ -119,21 +119,21 @@ void moveTurntable(int desiredPosition) {
       stayInFunction = false;
     }
     // if its in the correct position, don't move and increment counter
-    else if ((encoder_turntable.getRawPosition() < (desiredPosition + tolerance)) && (encoder_turntable.getRawPosition() > (desiredPosition - tolerance))) {
+    else if ((encoder_turntable_motor.getRawPosition() < (desiredPosition + tolerance)) && (encoder_turntable_motor.getRawPosition() > (desiredPosition - tolerance))) {
       turntable_motor.writeMicroseconds(1500);
       counter++;
       delay(3);
       stayInFunction = true;
     }
     // if it needs to move to the right
-    else if (encoder_turntable.getRawPosition() < desiredPosition) {
+    else if (encoder_turntable_motor.getRawPosition() < desiredPosition) {
       moveSpeed++;
       turntable_motor.writeMicroseconds(moveSpeed);
       counter = 0;
       stayInFunction = true;
     }
     //else if it needs to move to the left
-    else if (encoder_turntable.getRawPosition() > desiredPosition) {
+    else if (encoder_turntable_motor.getRawPosition() > desiredPosition) {
       moveSpeed--;
       turntable_motor.writeMicroseconds(moveSpeed);
       counter = 0;
@@ -160,10 +160,10 @@ void moveArm(int desiredPosition) {
     if (moveSpeed > 1700) {
       moveSpeed = 1600;
     }
-    else if ((moveSpeed < 1370) && (encoder_arm.getRawPosition() > 400)) {
+    else if ((moveSpeed < 1370) && (encoder_arm_motor.getRawPosition() > 400)) {
       moveSpeed = 1370;
     }
-    else if ((moveSpeed < 1450) && (encoder_arm.getRawPosition() < 200)) {
+    else if ((moveSpeed < 1450) && (encoder_arm_motor.getRawPosition() < 200)) {
       moveSpeed = 1450;
     }
 
@@ -175,21 +175,21 @@ void moveArm(int desiredPosition) {
       stayInFunction = false;
     }
     // if its in the correct position, don't move and increment counter
-    else if ((encoder_arm.getRawPosition() < (desiredPosition + tolerance)) && (encoder_arm.getRawPosition() > (desiredPosition - tolerance))) {
+    else if ((encoder_arm_motor.getRawPosition() < (desiredPosition + tolerance)) && (encoder_arm_motor.getRawPosition() > (desiredPosition - tolerance))) {
       arm_motor.writeMicroseconds(1500);
       counter++;
       delay(3);
       stayInFunction = true;
     }
     // if it needs to move to the right
-    else if (encoder_arm.getRawPosition() < desiredPosition) {
+    else if (encoder_arm_motor.getRawPosition() < desiredPosition) {
       moveSpeed++;
       arm_motor.writeMicroseconds(moveSpeed);
       counter = 0;
       stayInFunction = true;
     }
     //else if it needs to move to the left
-    else if (encoder_arm.getRawPosition() > desiredPosition) {
+    else if (encoder_arm_motor.getRawPosition() > desiredPosition) {
       moveSpeed--;
       arm_motor.writeMicroseconds(moveSpeed);
       counter = 0;
