@@ -135,8 +135,8 @@ void setup() {
 }//****************end setup****************end setup****************end setup****************end setup****************end setup****************
 
 
-
-
+String readString;
+int myspecialgain = 15;
 void loop() {
   /*
     followWall(1700, 'r', 15);
@@ -150,15 +150,43 @@ void loop() {
   //printPingSensorReadings();
   //servo_wrist.detach();
   //servo_magnet.detach();
-  driveStraightReverseEncoders(1350, -700);
-  delay(2000);
-  driveStraightAheadEncoders(1650, +700);
+  driveStraightReverseEncoders(1350, -1000);
+
+  //driveStraightAheadEncoders(1650, +1500);
   delay(2000);
 
 
+
+
+
+  while (Serial.available()) {
+    char c = Serial.read();   //gets one byte from serial buffer
+    readString += c;          //makes the string readString
+    delay(2);                 //slow down looping to allow buffer to fill with next character
+  }
+
+  if (readString.length() > 0) { //if something has been sent over serial
+    Serial.println(readString);  //echos back value that you sent, so you know serial is working
+    int n = readString.toInt();  //convert readString into a number
+
+
+
+    Serial.print("writing gain: ");
+    Serial.println(n);
+    myspecialgain = n;
+
+
+
+    readString = ""; //empty for next input
+  }
 }
 
-void driveStraightReverse(int ci_drive_speed){
+
+
+
+
+
+void driveStraightReverse(int ci_drive_speed) {
   // make this for tyler
 }
 
@@ -168,7 +196,7 @@ void driveStraightReverseEncoders(int ci_drive_speed, int desiredPosition) {
 
   // if it has been awhile since this function was called, update leftSpeed with the passed speed value and reset encoderTracker
   if ((millis() - lastDriveStraightUpdateTime) > 40) {
-    leftSpeedDriveStraight = ci_drive_speed-10;
+    leftSpeedDriveStraight = ci_drive_speed - 10;
     encoderTracker = 0;
   }
 
@@ -179,16 +207,18 @@ void driveStraightReverseEncoders(int ci_drive_speed, int desiredPosition) {
     if ((millis() - lastDriveStraightUpdateTime) > 20) {
       int error = encoder_leftMotor.getRawPosition() - encoder_rightMotor.getRawPosition(); // error is the difference in .getRawPositions()
       if (error < 0) {        // if the left motor went too far, slow it down
-        leftSpeedDriveStraight -= 15;
+        leftSpeedDriveStraight += 5;
       }
       else if (error > 0) {       // else if the left motor didnt go far enough, speed it up
-        leftSpeedDriveStraight += 15;
+        leftSpeedDriveStraight -= 5;
       }
 
-      leftSpeedDriveStraight = constrain(leftSpeedDriveStraight, 0, 1500);   // constrain leftSpeedDriveStraight to values possible to send to servo
+      leftSpeedDriveStraight = constrain(leftSpeedDriveStraight, 1000, 1500);   // constrain leftSpeedDriveStraight to values possible to send to servo
       left_motor.writeMicroseconds(leftSpeedDriveStraight);        // set leftSpeedDriveStraight
       right_motor.writeMicroseconds(ci_drive_speed);    // the right motor constantly runs at the passed speed
-
+      Serial.println();
+      Serial.print("leftspeed: ");
+      Serial.print(leftSpeedDriveStraight);
       encoderTracker += encoder_rightMotor.getRawPosition();  // tracks how far the encoder has moved
 
       encoder_leftMotor.zero();    // zero encoders to prevent overflow errors
