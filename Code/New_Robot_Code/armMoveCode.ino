@@ -19,6 +19,7 @@
 // if a magnetic field was detected, the arm will turn to that position, extend the magnet, raise/center the arm, and return true
 // if a magnetic field was not detected, the arm will drop, sweep left in an attempt to knock away the bad tesseract, and return false
 bool tesseractArmScan() {
+  driveStraightReverseEncoders(1350, -150);    //backup an appropriate amount
   servo_magnet.write(ci_magnet_retract);  // retract magnet
   moveArm(ci_arm_carry_height);  // move arm up
   sweepServo(servo_wrist, ci_wrist_parallel);  // wrist out?

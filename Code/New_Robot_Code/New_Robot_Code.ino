@@ -34,7 +34,10 @@ const int ci_turntable_center = 800;        // encoder ticks of the turntable at
 const int ci_arm_scanning_height = 20;       // encoder ticks with the arm at a height ideal for tesseract scanning/pickup
 const int ci_arm_carry_height = 220;          // encoder ticks with the arm at height ideal for driving around and not blocking the front ping sensor
 const int ci_arm_push_away_height = -46;      // encoder ticks with the arm dropped just above the ground, ready to push away bad tesseracts
-
+// variables used in P control drive straight functions
+unsigned long lastDriveStraightUpdateTime = 0;    //updates with las time motor speeds were adjusted in P control drive straight functions
+unsigned int leftSpeedDriveStraight = 0;          // left speed for P control drive straight functions
+long encoderTracker = 0;                          // trscks how many encoder ticks were travelled in P control drive straight functions
 
 //******************************************************************
 //************************PORT PIN CONSTANTS************************
@@ -133,38 +136,66 @@ void setup() {
 
 
 
-bool runOnce = true;
 
 void loop() {
-  printEncoderValues();
-  //printSensorReadings();
+  /*
+    followWall(1700, 'r', 15);
+
+    // if detected
+    if (!digitalRead(ci_IR_crown_pin)) {
+      tesseractArmScan();
+    }
+  */
+  //printEncoderValues();
   //printPingSensorReadings();
+  //servo_wrist.detach();
+  //servo_magnet.detach();
+  driveStraightReverseEncoders(1350, -700);
+  delay(2000);
+  driveStraightAheadEncoders(1650, +700);
+  delay(2000);
 
 
+}
 
-  // followWall(1600, 'L', 10);
-
-if (runOnce) {
-    driveStraight(1650);
-  }
-
-
-  // if tesseract detected
-  if (!digitalRead(ci_IR_crown_pin)) {
-    runOnce = false;
-    stopDrive();
-
-    //reverse
-    driveStraightReverseEncoders(1300, -140);
-    // sweep
-
-    bool detected = tesseractArmScan();
-    Serial.println();
-    Serial.print("good tesseract: ");
-    Serial.print(detected);
-    runOnce = false;
-  }
+void driveStraightReverse(int ci_drive_speed){
+  // make this for tyler
 }
 
 
 
+void driveStraightReverseEncoders(int ci_drive_speed, int desiredPosition) {
+
+  // if it has been awhile since this function was called, update leftSpeed with the passed speed value and reset encoderTracker
+  if ((millis() - lastDriveStraightUpdateTime) > 40) {
+    leftSpeedDriveStraight = ci_drive_speed-10;
+    encoderTracker = 0;
+  }
+
+  // while the encoder ticks have not surpassed the desiredposition, the function runs
+  while (encoderTracker > desiredPosition) {
+
+    // the left motor speed is updated every 20mS in this loop
+    if ((millis() - lastDriveStraightUpdateTime) > 20) {
+      int error = encoder_leftMotor.getRawPosition() - encoder_rightMotor.getRawPosition(); // error is the difference in .getRawPositions()
+      if (error < 0) {        // if the left motor went too far, slow it down
+        leftSpeedDriveStraight -= 15;
+      }
+      else if (error > 0) {       // else if the left motor didnt go far enough, speed it up
+        leftSpeedDriveStraight += 15;
+      }
+
+      leftSpeedDriveStraight = constrain(leftSpeedDriveStraight, 0, 1500);   // constrain leftSpeedDriveStraight to values possible to send to servo
+      left_motor.writeMicroseconds(leftSpeedDriveStraight);        // set leftSpeedDriveStraight
+      right_motor.writeMicroseconds(ci_drive_speed);    // the right motor constantly runs at the passed speed
+
+      encoderTracker += encoder_rightMotor.getRawPosition();  // tracks how far the encoder has moved
+
+      encoder_leftMotor.zero();    // zero encoders to prevent overflow errors
+      encoder_rightMotor.zero();
+      lastDriveStraightUpdateTime = millis();          // update last time the speeds were updated
+    }
+  }
+  stopDrive();            // stop motors when call has finished
+  encoderTracker = 0;     // logically this is redundant as its reset at the start of the call
+}//****************end of driveStraightAHeadEncoders****************end of driveStraightAHeadEncoders****************
