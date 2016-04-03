@@ -150,10 +150,12 @@ void loop() {
   //printPingSensorReadings();
   //servo_wrist.detach();
   //servo_magnet.detach();
-  driveStraightReverseEncoders(1350, -1000);
+  //driveStraightReverseEncoders(1350, -1000);
+
+  driveStraightReverse(1350);
 
   //driveStraightAheadEncoders(1650, +1500);
-  delay(2000);
+
 
 
 
@@ -184,48 +186,3 @@ void loop() {
 
 
 
-
-
-void driveStraightReverse(int ci_drive_speed) {
-  // make this for tyler
-}
-
-
-
-void driveStraightReverseEncoders(int ci_drive_speed, int desiredPosition) {
-
-  // if it has been awhile since this function was called, update leftSpeed with the passed speed value and reset encoderTracker
-  if ((millis() - lastDriveStraightUpdateTime) > 40) {
-    leftSpeedDriveStraight = ci_drive_speed - 10;
-    encoderTracker = 0;
-  }
-
-  // while the encoder ticks have not surpassed the desiredposition, the function runs
-  while (encoderTracker > desiredPosition) {
-
-    // the left motor speed is updated every 20mS in this loop
-    if ((millis() - lastDriveStraightUpdateTime) > 20) {
-      int error = encoder_leftMotor.getRawPosition() - encoder_rightMotor.getRawPosition(); // error is the difference in .getRawPositions()
-      if (error < 0) {        // if the left motor went too far, slow it down
-        leftSpeedDriveStraight += 5;
-      }
-      else if (error > 0) {       // else if the left motor didnt go far enough, speed it up
-        leftSpeedDriveStraight -= 5;
-      }
-
-      leftSpeedDriveStraight = constrain(leftSpeedDriveStraight, 1000, 1500);   // constrain leftSpeedDriveStraight to values possible to send to servo
-      left_motor.writeMicroseconds(leftSpeedDriveStraight);        // set leftSpeedDriveStraight
-      right_motor.writeMicroseconds(ci_drive_speed);    // the right motor constantly runs at the passed speed
-      Serial.println();
-      Serial.print("leftspeed: ");
-      Serial.print(leftSpeedDriveStraight);
-      encoderTracker += encoder_rightMotor.getRawPosition();  // tracks how far the encoder has moved
-
-      encoder_leftMotor.zero();    // zero encoders to prevent overflow errors
-      encoder_rightMotor.zero();
-      lastDriveStraightUpdateTime = millis();          // update last time the speeds were updated
-    }
-  }
-  stopDrive();            // stop motors when call has finished
-  encoderTracker = 0;     // logically this is redundant as its reset at the start of the call
-}//****************end of driveStraightAHeadEncoders****************end of driveStraightAHeadEncoders****************

@@ -42,9 +42,14 @@ void turnLeftSharp(int ci_drive_speed, int speedModifier) {
   left_motor.writeMicroseconds(ci_drive_speed - speedModifier * 1.5);
 }//****************end of mini functions****************end of mini functions****************
 
-// sets both motors to the same speed, needs some control code to drive straight
-void driveStraight(const int ci_drive_speed) {
 
+
+//*************************************************************************************************************************************************
+//*************************************************************************************************************************************************
+//*************************************************************************************************************************************************
+//*************************************************************************************************************************************************
+// drives straight forward using a poor P controller
+void driveStraight(const int ci_drive_speed) {
   // if it has been awhile since this function was called, update leftSpeed with the passed speed value
   if ((millis() - lastDriveStraightUpdateTime) > 40) {
     leftSpeedDriveStraight = ci_drive_speed;
@@ -69,22 +74,19 @@ void driveStraight(const int ci_drive_speed) {
     lastDriveStraightUpdateTime = millis();          // update last time the speeds were updated
   }
 }
+//*************************************************************************************************************************************************
+//*************************************************************************************************************************************************
+//*************************************************************************************************************************************************
+//*************************************************************************************************************************************************
 
 
 
 
 
-
-// call this to drive "straight" reverse to a new encoder value
-// for example this will drive straight back at speed 1400 until both motors have incremented -1000 encoder ticks:
-// driveStraightReverseEncoders(1400, -1000);
-// 1000 encoder ticks makes for about 15.5" or 39.4cm
-//void driveStraightReverseEncoders(int ci_drive_speed, int encoderTicks) {
-
-//}//****************end of driveStraightreverseEncoders****************end of driveStraightreverseEncoders****************
-
-
-
+//*************************************************************************************************************************************************
+//*************************************************************************************************************************************************
+//*************************************************************************************************************************************************
+//*************************************************************************************************************************************************
 // call this to drive "straight" ahead to a new encoder value
 // for example this will drive straight ahead at speed 1600 until both motors have incremented 1000 encoder ticks:
 // driveStraightAheadEncoders(1600, 1000);
@@ -124,6 +126,127 @@ void driveStraightAheadEncoders(int ci_drive_speed, int desiredPosition) {
   stopDrive();            // stop motors when call has finished
   encoderTracker = 0;     // logically this is redundant as its reset at the start of the call
 }//****************end of driveStraightAHeadEncoders****************end of driveStraightAHeadEncoders****************
+//*************************************************************************************************************************************************
+//*************************************************************************************************************************************************
+//*************************************************************************************************************************************************
+//*************************************************************************************************************************************************
+
+
+
+
+
+//*************************************************************************************************************************************************
+//*************************************************************************************************************************************************
+//*************************************************************************************************************************************************
+//*************************************************************************************************************************************************
+// drives straight in reverse using a poor P controller
+void driveStraightReverse(const int ci_drive_speed) {
+  // if it has been awhile since this function was called, update leftSpeed with the passed speed value
+  if ((millis() - lastDriveStraightUpdateTime) > 40) {
+    leftSpeedDriveStraight = ci_drive_speed - 10;
+  }
+
+  // the left motor speed is updated every 20mS in this loop
+  if ((millis() - lastDriveStraightUpdateTime) > 20) {
+    int error = encoder_leftMotor.getRawPosition() - encoder_rightMotor.getRawPosition();   // error is the difference in .getRawPositions()
+    if (error < 0) {        // if the left motor went too far, slow it down
+      leftSpeedDriveStraight += 5;
+    }
+    else if (error > 0) {       // else if the left motor didnt go far enough, speed it up
+      leftSpeedDriveStraight -= 5;
+    }
+
+    leftSpeedDriveStraight = constrain(leftSpeedDriveStraight, 1000, 1500);  // constrain leftSpeedDriveStraight to values possible to send to servo
+    left_motor.writeMicroseconds(leftSpeedDriveStraight);        // set leftSpeedDriveStraight
+    right_motor.writeMicroseconds(ci_drive_speed);   // right motor runs constantly at the passed speed
+
+    encoder_leftMotor.zero();    // zero encoders to prevent overflow errors
+    encoder_rightMotor.zero();
+    lastDriveStraightUpdateTime = millis();          // update last time the speeds were updated
+  }
+}
+//*************************************************************************************************************************************************
+//*************************************************************************************************************************************************
+//*************************************************************************************************************************************************
+//*************************************************************************************************************************************************
+
+
+
+
+
+//*************************************************************************************************************************************************
+//*************************************************************************************************************************************************
+//*************************************************************************************************************************************************
+//*************************************************************************************************************************************************
+// call this to drive "straight" reverse to a new encoder value
+// for example this will drive straight back at speed 1400 until both motors have incremented -1000 encoder ticks:
+// driveStraightReverseEncoders(1400, -1000);
+// 1000 encoder ticks makes for about 15.5" or 39.4cm
+//void driveStraightReverseEncoders(int ci_drive_speed, int encoderTicks) {
+void driveStraightReverseEncoders(int ci_drive_speed, int desiredPosition) {
+  // if it has been awhile since this function was called, update leftSpeed with the passed speed value and reset encoderTracker
+  if ((millis() - lastDriveStraightUpdateTime) > 40) {
+    leftSpeedDriveStraight = ci_drive_speed - 10;
+    encoderTracker = 0;
+  }
+
+  // while the encoder ticks have not surpassed the desiredposition, the function runs
+  while (encoderTracker > desiredPosition) {
+
+    // the left motor speed is updated every 20mS in this loop
+    if ((millis() - lastDriveStraightUpdateTime) > 20) {
+      int error = encoder_leftMotor.getRawPosition() - encoder_rightMotor.getRawPosition(); // error is the difference in .getRawPositions()
+      if (error < 0) {        // if the left motor went too far, slow it down
+        leftSpeedDriveStraight += 5;
+      }
+      else if (error > 0) {       // else if the left motor didnt go far enough, speed it up
+        leftSpeedDriveStraight -= 5;
+      }
+
+      leftSpeedDriveStraight = constrain(leftSpeedDriveStraight, 1000, 1500);   // constrain leftSpeedDriveStraight to values possible to send to servo
+      left_motor.writeMicroseconds(leftSpeedDriveStraight);        // set leftSpeedDriveStraight
+      right_motor.writeMicroseconds(ci_drive_speed);    // the right motor constantly runs at the passed speed
+      Serial.println();
+      Serial.print("leftspeed: ");
+      Serial.print(leftSpeedDriveStraight);
+      encoderTracker += encoder_rightMotor.getRawPosition();  // tracks how far the encoder has moved
+
+      encoder_leftMotor.zero();    // zero encoders to prevent overflow errors
+      encoder_rightMotor.zero();
+      lastDriveStraightUpdateTime = millis();          // update last time the speeds were updated
+    }
+  }
+  stopDrive();            // stop motors when call has finished
+  encoderTracker = 0;     // logically this is redundant as its reset at the start of the call
+}//****************end of driveStraightReverseEncoders****************end of driveStraightReverseEncoders****************
+//*************************************************************************************************************************************************
+//*************************************************************************************************************************************************
+//*************************************************************************************************************************************************
+//*************************************************************************************************************************************************
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 // call this to do a 90 degree turn in place to the left
