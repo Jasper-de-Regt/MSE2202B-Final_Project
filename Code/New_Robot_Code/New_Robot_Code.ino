@@ -4,6 +4,7 @@
 #include <I2CEncoder.h>
 #include <NewPing.h>
 
+
 //  Naming conventions:
 //  camelcase
 //  - E.g. itLooksLikeThis
@@ -16,10 +17,11 @@
 //    LED instead of light_emitting_diode or lightEmittingDiode
 
 
+
+
+
 //****************************************************************
 //************************GLOBAL VARIABLES************************
-int moveSpeed = 1500;
-int counter = 0;
 // servo angle constants
 const int ci_magnet_retract = 120;        //angle of servo_magnet with magnet in the "off" position
 const int ci_magnet_extend = 10;          // angle of the servo_magnet with magnet in the "on" or "pickup" position
@@ -38,6 +40,9 @@ const int ci_arm_push_away_height = -46;      // encoder ticks with the arm drop
 unsigned long lastDriveStraightUpdateTime = 0;    //updates with las time motor speeds were adjusted in P control drive straight functions
 unsigned int leftSpeedDriveStraight = 0;          // left speed for P control drive straight functions
 long encoderTracker = 0;                          // trscks how many encoder ticks were travelled in P control drive straight functions
+// variables used in P position control arm and turntable
+int moveSpeed = 1500;   //used in move arm and move turntable P position control functions
+int counter = 0;      //used in move arm and move turntable P position control functions
 
 //******************************************************************
 //************************PORT PIN CONSTANTS************************
@@ -95,7 +100,6 @@ void setup() {
   Wire.begin();        // Wire library required for I2CEncoder library
   Serial.begin(9600);  // pour a bowl of serial, a special type of soup
 
-
   //*******************************************************************
   //************************PIN SETUPS*********************************
   pinMode(ci_left_motor_pin, OUTPUT);
@@ -134,54 +138,269 @@ void setup() {
   Serial.println("setup has completed");
 }//****************end setup****************end setup****************end setup****************end setup****************end setup****************
 
+char wall = 'l';  // which side the wall is on when calling wall follow
+int dis = 15;     // distance to drive from wall
+int mode = 1;     // switchcase variable
+bool found = false; // has a tesseract been found
+const int encodercm = 38.9;   //31.75encoder ticks per cm constant, derived experimentally
+int mySpeed = 1630;
+#define maincode;
 
-String readString;
-int myspecialgain = 15;
+// garbage variables
+int temps;
+bool once = true;
+
+
+
 void loop() {
-  /*
-    followWall(1700, 'r', 15);
-
-    // if detected
-    if (!digitalRead(ci_IR_crown_pin)) {
-      tesseractArmScan();
-    }
-  */
-  //printEncoderValues();
   //printPingSensorReadings();
-  //servo_wrist.detach();
-  //servo_magnet.detach();
-  //driveStraightReverseEncoders(1350, -1000);
+  // start with wall on left side
+  // follow wall close by and look for tesseracts
+  // if not found, continue
+  // if found, go home
+  //  followWall(int ci_drive_speed, char wallSide, int desiredDistance);
 
-  driveStraightReverse(1350);
-
-  //driveStraightAheadEncoders(1650, +1500);
-
-
-
-
+  // while not detecting a tesseract
+  // 25.381 encoder ticks/cm;
+  //followWall(mySpeed, 'r', 20);
 
 
-  while (Serial.available()) {
-    char c = Serial.read();   //gets one byte from serial buffer
-    readString += c;          //makes the string readString
-    delay(2);                 //slow down looping to allow buffer to fill with next character
+
+#ifdef maincode
+  switch (mode) {
+    case 1:   // driveCase // needs work
+      //follow wall looking for tesseract
+      Serial.println("mode 1");
+      Serial.println();
+      Serial.print("   distabnce: ");
+      Serial.print(dis);
+      Serial.print("     wall: ");
+      Serial.print(wall);
+      followWall(mySpeed, wall, dis);
+
+      // if a tesseract is found, jump to the arm scanning case
+      if (!digitalRead(ci_IR_crown_pin)) {
+        mode = 2;
+      }
+
+      // if you approach the end wall, goto turn around and follow wall again case
+      temps = (frontPingSensor.convert_cm(frontPingSensor.ping_median(10)));   // averages 10 measurements, returns in cm
+      Serial.println(temps);
+      if (temps < 10) {
+        Serial.println("hitting temps<5");
+        mode = 3;
+      }
+      break;    // end switch case 1
+
+
+
+
+    case 2:   //tesseractScan
+      // scan for magnetic tesseract, if one is found its picked up and returns true, bad ones are shoved aside and return false
+      Serial.println("mode 2");
+      found = tesseractArmScan();
+
+      // if bad tesseract was found, continue following wall looking for tesseract
+      if (!found) {
+        mode = 1;
+      }
+      // if the tesseract was found, special magic to return home and dropoff
+      else if (found) {
+        mode = 4;
+      }
+      break;    // end switch case 2
+
+
+
+    case 3:   // when wall following and you approach an end wall, this case will turn the robot, move it further from wall
+      Serial.println("mode 3");
+
+      // if the wall is currently on the left side
+      if (wall == 'l') {
+        // skid 90 right, don't need to scan for tesseracts because the robot is round and pivots in place
+        skidsteerNinetyRight(mySpeed);
+        // drive forward appropriate amount while scanning for tesseracts
+        found = driveStraightAheadEncoders(mySpeed, encodercm * 5);
+
+        if (!found) {                       // if no tesseract was found during the short forward move
+          skidsteerNinetyRight(mySpeed);    // turn right again (which finishes the 180)
+          wall = 'r';                       // update wall
+          dis += 5;                         // update distance
+          mode = 1;                         // return to driveCase
+        }
+
+        // else if a magnetic tesseract was found during the short fwd move, perpendicular to main wall
+        else if (found) {
+          //empty, special magic to pickup and return home
+        }
+      }// end of if wall == 'l'
+
+
+      // if the wall is currently on the right side
+      else if (wall == 'r') {
+        // skid 90 left, don't need to scan for tesseracts because the robot is round and pivots in place
+        skidsteerNinetyLeft(mySpeed);
+        // drive forward appropriate amount while scanning for tesseracts
+        found = driveStraightAheadEncoders(mySpeed, encodercm * 5);
+
+        if (!found) {                       // if no tesseract was found during the short forward move
+          skidsteerNinetyLeft(mySpeed);    // turn left again (which finishes the 180)
+          wall = 'l';                       // update wall
+          dis += 5;                         // update distance
+          mode = 1;                         // return to driveCase
+        }
+        if (found) {
+          //empty, special magic to pickup and return home
+        }
+      }// end of if wall == 'r'
+
+      break;    // end switch case 3
+
+
+    case 4:   // carrying a tesseract -> go home
+      Serial.println("mode 4");
+      // if the main wall is on the right side, turn towards main wall
+      if (wall = 'r') {
+        skidsteerNinetyRight(mySpeed);
+      }
+      // else if the main wall is on the left side, turn towards main wall
+      else if (wall = 'l') {
+        // skidsteer towards wall
+        skidsteerNinetyLeft(mySpeed);
+      }
+
+      // the robot is not somewhere in the arena, facing the main wall
+
+      // drive straight up to main wall until reaching it
+      while ((frontPingSensor.convert_cm(frontPingSensor.ping_median(10))) > 15) {
+        driveStraight(mySpeed);
+      }
+      stopDrive();
+
+      // skidsteer towards home
+      skidsteerNinetyLeft(mySpeed);
+
+      // follow close to the wall, heading towards start corner, until reaching the corner
+      wall = 'r'; // main wall on right side
+      dis = 15;   // reset distance so drives close to wall
+      while ((frontPingSensor.convert_cm(frontPingSensor.ping_median(10))) > 15) {
+        followWall(mySpeed, wall, dis);
+      }
+      stopDrive();
+      //robot is now in the start corner, facing into the corner
+
+      // goto putting the tesseract down between the tape marks code
+      mode = 6;
+      break;    // end switch case 4
+
+
+  }//end of switch case curly bracket
+#endif
+}//end loop curly bracket
+
+
+
+
+void parallel() {
+
+  //if the wall is on the left, use left ping sensors
+  if (wall = 'l') {
+
+    int error = (frontLeftPingSensor.ping_cm() - backLeftPingSensor.ping_cm());
+
+    if (error > 0) { // while error is greater than 0, turn towards wall
+      while ((frontLeftPingSensor.ping_cm() - backLeftPingSensor.ping_cm()) > 0) {
+        left_motor.writeMicroseconds(3000 - mySpeed);
+        right_motor.writeMicroseconds(mySpeed);
+      }
+    }
+    else if (error < 0) { // while error is less than 0, turn towards wall
+      while ((frontLeftPingSensor.ping_cm() - backLeftPingSensor.ping_cm()) < 0) {
+        left_motor.writeMicroseconds(mySpeed);
+        right_motor.writeMicroseconds(3000 - mySpeed);
+      }
+    }
+
+
   }
 
-  if (readString.length() > 0) { //if something has been sent over serial
-    Serial.println(readString);  //echos back value that you sent, so you know serial is working
-    int n = readString.toInt();  //convert readString into a number
 
-
-
-    Serial.print("writing gain: ");
-    Serial.println(n);
-    myspecialgain = n;
-
-
-
-    readString = ""; //empty for next input
-  }
+  stopDrive();
 }
+
+
+
+void parallelLeft(int ci_drive_speed) {
+  // if it has been awhile since this function was called, update leftSpeed with the passed speed value and reset encoderTracker
+  int desiredPosition = -439;   // 439 encoder ticks of each motor is a 90 degree turn
+  encoder_leftMotor.zero();    // zero encoders
+  encoder_rightMotor.zero();
+
+
+
+  // while turned away from wall, turn closer to wall (right side fwd, left side rev)
+  if ((frontLeftPingSensor.ping_cm() - backLeftPingSensor.ping_cm()) > 0) {
+    leftSpeedDriveStraight = 3000 - ci_drive_speed;
+    encoderTracker = 0;
+    while ((frontLeftPingSensor.ping_cm() - backLeftPingSensor.ping_cm()) > 0) {
+      // the left motor speed is updated every 20mS in this loop
+      if ((millis() - lastDriveStraightUpdateTime) > 20) {
+        int error = encoder_leftMotor.getRawPosition() + encoder_rightMotor.getRawPosition();  // error is the difference in .getRawPositions()
+        if (error < 0) {        // if the left motor went too far, slow it down, closer to 1500
+          leftSpeedDriveStraight += 15;
+        }
+        else if (error > 0) {       // else if the left motor didnt go far enough, speed it up, further from 1500, smaller
+          leftSpeedDriveStraight -= 15;
+        }
+        leftSpeedDriveStraight = constrain(leftSpeedDriveStraight, 1000, 1500);   // constrain leftSpeedDriveStraight to values possible to send to servo
+        left_motor.writeMicroseconds(leftSpeedDriveStraight);        // set leftSpeedDriveStraight
+        right_motor.writeMicroseconds(ci_drive_speed);  // the right motor constantly runs at the passed speed
+        encoderTracker += encoder_leftMotor.getRawPosition();  // tracks how far the encoder has moved
+        encoder_leftMotor.zero();    // zero encoders to prevent overflow errors
+        encoder_rightMotor.zero();
+        lastDriveStraightUpdateTime = millis();          // update last time the speeds were updated
+      }
+    }
+  }
+
+  // while turned towards wall, turn away from wall (right side rev, left side fwd)
+  if ((frontLeftPingSensor.ping_cm() - backLeftPingSensor.ping_cm()) < 0) {
+    leftSpeedDriveStraight = ci_drive_speed;
+    encoderTracker = 0;
+    while ((frontLeftPingSensor.ping_cm() - backLeftPingSensor.ping_cm()) < 0) {
+      // the left motor speed is updated every 20mS in this loop
+      if ((millis() - lastDriveStraightUpdateTime) > 20) {
+        int error = encoder_leftMotor.getRawPosition() + encoder_rightMotor.getRawPosition();  // error is the difference in .getRawPositions()
+        if (error > 0) {        // if the left motor went too far, slow it down, closer to 1500
+          leftSpeedDriveStraight -= 15;
+        }
+        else if (error < 0) {       // else if the left motor didnt go far enough, speed it up, further from 1500, smaller
+          leftSpeedDriveStraight += 15;
+        }
+        leftSpeedDriveStraight = constrain(leftSpeedDriveStraight, 1500, 2000);   // constrain leftSpeedDriveStraight to values possible to send to servo
+        left_motor.writeMicroseconds(leftSpeedDriveStraight);        // set leftSpeedDriveStraight
+        right_motor.writeMicroseconds(3000-ci_drive_speed);  // the right motor constantly runs at the passed speed
+        encoderTracker += encoder_leftMotor.getRawPosition();  // tracks how far the encoder has moved
+        encoder_leftMotor.zero();    // zero encoders to prevent overflow errors
+        encoder_rightMotor.zero();
+        lastDriveStraightUpdateTime = millis();          // update last time the speeds were updated
+      }
+    }
+  }
+
+
+
+
+  stopDrive();            // stop motors when call has finished
+  encoderTracker = 0;     // logically this is redundant as its reset at the start of the call
+}
+
+
+
+
+
+
+
 
 
 
