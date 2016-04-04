@@ -149,10 +149,15 @@ const int encodercm = 38.9;   //31.75encoder ticks per cm constant, derived expe
 const int ci_lowcal_black = 980;
 const int ci_lowcal_metal = 720;
 const int ci_lowcal_tesseract = 680;
-const int ci_wrist_up = 145;
+const int ci_wrist_up = 110;
+const int ci_arm_pre_wall_scan = 230;
+const int ci_arm_wall_scan_height = 30;
+const int ci_turntable_wall_scan = 230;
 bool bt_origin_orientation = false;
+bool bt_deposit_prepared = false;
 unsigned int ui_current_black = 0; // Measures the current number of black tape lines it has seen. 0 is measured as furthest from the origin
 unsigned int ui_tesseracts_left = 3; // Measures the number of tesseracts left to collect
+
 
 
 int mySpeed = 1630;
@@ -307,11 +312,23 @@ void loop() {
 
     case 6:      //Putting tesseract between the tape lines when starting facing the corner
 
-      //printSensorReadings(); //Diagnostic
-      //Serial.println(analogRead(ci_arm_linetracker_pin)- (ci_lowcal_black-ci_lowcal_metal)/2);
+      /* //Diagnostic
+      if (bt_deposit_prepared == false) {
+        sweepServo(servo_wrist, ci_wrist_up+50);
+        moveTurntable(ci_turntable_wall_scan);
+        moveArm(ci_arm_pre_wall_scan);
+        moveArm(ci_arm_wall_scan_height);
 
-      
-      if (!bt_origin_orientation) { //If the
+        bt_deposit_prepared = !bt_deposit_prepared;
+      }*/
+      //printSensorReadings(); //Diagnostic
+      //printEncoderValues(); //Diagnostic
+      //Serial.println((ci_lowcal_black - analogRead(ci_arm_linetracker_pin)) < (ci_lowcal_black - ci_lowcal_metal - 90));
+
+
+
+
+      if (!bt_origin_orientation) { //If the robot is not in the orientation at the origin
         if (frontLeftPingSensor.ping_cm() < frontRightPingSensor.ping_cm()) {
           skidsteerNinetyRight(mySpeed);
           //sweepServo(servo_wrist, ci_wrist_carry); //Diagnostic
@@ -324,46 +341,66 @@ void loop() {
         bt_origin_orientation = true;
       }
       else {
-        // Now that the bot is facing the correct direction,
-        // with the starting wall on its left,
-        // Move the arm into position
-        moveTurntable(ci_turntable_left);
-        moveArm(ci_arm_scanning_height);
-        //sweepServo(servo_wrist, ci_wrist_push_away); //Diagnostic
 
-        // Drive forward ~15.5 in
-        driveStraightAheadEncoders(mySpeed, 1000);
+        if (!bt_deposit_prepared) {
+          // Now that the bot is facing the correct direction,
+          // with the starting wall on its left,
+          // Move the arm into position
+          sweepServo(servo_wrist, ci_wrist_up + 50);
+          moveTurntable(ci_turntable_wall_scan);
+          moveArm(ci_arm_pre_wall_scan);
+          moveArm(ci_arm_wall_scan_height);
+          //sweepServo(servo_wrist, ci_wrist_push_away); //Diagnostic
+
+          // Drive forward ~15.5 in
+          driveStraightAheadEncoders(mySpeed, 1000);
+
+          bt_deposit_prepared = !bt_deposit_prepared;
+        }
 
         // Drive backward while scanning until the reading is sheet metal (stop), then drive backward until hit the tape.
         // Continue driving backward while the tape gets hit. Count the instances of reading tape.
         // Deposit the tesseract in the last instance of an open space
 
-        if (ui_current_black < ui_tesseracts_left) {
+        while (ui_current_black < ui_tesseracts_left) {
           //Drives backward until it sees a tape line
-          while ( analogRead(ci_arm_linetracker_pin)  < ((ci_lowcal_black - ci_lowcal_metal) / 2) ) {
+          if ((ci_lowcal_black - analogRead(ci_arm_linetracker_pin)) < (ci_lowcal_black - ci_lowcal_metal - 90)) {
             //Drive backward in 26 encoder tick increments ~ 1 cm
             driveStraightReverseEncoders(mySpeed, 26);
 
           }
           stopDrive();
           driveStraightReverseEncoders(mySpeed, 52); //Reverses another 2 cm ~ 52 encoder ticks
-          ui_current_black++;
+
+          if (analogRead(ci_arm_linetracker_pin) < 800) {
+            ui_current_black++;
+          }
         }
-        
-        
+
+
+
         //Move the arm up to the calibration (cal) height to avoid hitting a waiting tesseract
-        //if ( analogRead(ci_arm_linetracker_pin) < ci_lowcal_metal) 
-        
-        
-        //Moves the arm into position to deposit the tesseract 
+        //if ( analogRead(ci_arm_linetracker_pin) < ci_lowcal_metal)
+
+
+        //Moves the arm into position to deposit the tesseract
         moveArm(ci_arm_carry_height);
         sweepServo(servo_wrist, ci_wrist_carry);
         servo_magnet.write(ci_magnet_retract);
+
+
+        // after deposit, move arm//turntable back to carry position
+        moveArm(ci_arm_carry_height);
+        sweepServo(servo_wrist, ci_wrist_parallel);
+        servo_magnet.write(ci_magnet_retract);
         
-        
+        //back to 1
+        mode = 1;
       }
-      
-      
+
+
+
+
       break;       //end switch case 6
 
 
