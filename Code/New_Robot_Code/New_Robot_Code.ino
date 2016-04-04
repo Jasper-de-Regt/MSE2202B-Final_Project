@@ -150,8 +150,9 @@ const int ci_lowcal_black = 980;
 const int ci_lowcal_metal = 720;
 const int ci_lowcal_tesseract = 680;
 const int ci_wrist_up = 110;
+const int ci_wrist_dropoff = 50;
 const int ci_arm_pre_wall_scan = 230;
-const int ci_arm_wall_scan_height = 10;
+const int ci_arm_wall_scan_height = -20;
 const int ci_turntable_wall_scan = 230;
 bool bt_origin_orientation = false;
 bool bt_deposit_prepared = false;
@@ -346,21 +347,22 @@ void loop() {
       }
       else {
 
-        if (!bt_deposit_prepared) {
+        if ((!bt_deposit_prepared) && (bt_origin_orientation)) {
           // Now that the bot is facing the correct direction,
           // with the starting wall on its left,
           // Move the arm into position
           sweepServo(servo_wrist, ci_wrist_up + 50);
           moveTurntable(ci_turntable_wall_scan);
-          moveArmSweep(ci_arm_pre_wall_scan);
+          //moveArmSweep(ci_arm_pre_wall_scan);
           moveArmSweep(ci_arm_wall_scan_height);
           //sweepServo(servo_wrist, ci_wrist_push_away); //Diagnostic
 
           // Drive forward ~15.5 in
           driveStraightAheadEncoders(mySpeed, 1000);
           //parallel function
-
-          bt_deposit_prepared = !bt_deposit_prepared;
+          
+          bt_origin_orientation = !bt_origin_orientation;
+          //bt_deposit_prepared = !bt_deposit_prepared;
         }
 
         // Drive backward while scanning until the reading is sheet metal (stop), then drive backward until hit the tape.
@@ -369,15 +371,16 @@ void loop() {
 
         while (ui_current_black < ui_tesseracts_left) {
           //Drives backward until it sees a tape line
-          if ((ci_lowcal_black - analogRead(ci_arm_linetracker_pin)) < (ci_lowcal_black - ci_lowcal_metal - 90)) {
+          //if ((ci_lowcal_black - analogRead(ci_arm_linetracker_pin)) > (ci_lowcal_black - ci_lowcal_metal - 90)) {
+          if (analogRead(ci_arm_linetracker_pin) > ci_lowcal_metal) {
             //Drive backward in 26 encoder tick increments ~ 1 cm
             driveStraightReverseEncoders(mySpeed, 26);
           }
-          stopDrive();
-          driveStraightReverseEncoders(mySpeed, 52); //Reverses another 2 cm ~ 52 encoder ticks
+          //stopDrive(); 
 
-          if (analogRead(ci_arm_linetracker_pin) < 800) {
+          if (analogRead(ci_arm_linetracker_pin) > ci_lowcal_metal) {
             ui_current_black++;
+            driveStraightReverseEncoders(mySpeed, 52); //Reverses another 2 cm ~ 52 encoder ticks
           }
         }
 
@@ -389,7 +392,7 @@ void loop() {
 
         //Moves the arm into position to deposit the tesseract
         moveArmSweep(ci_arm_carry_height);
-        sweepServo(servo_wrist, ci_wrist_carry);
+        sweepServo(servo_wrist, ci_wrist_dropoff);
         servo_magnet.write(ci_magnet_retract);
 
 
