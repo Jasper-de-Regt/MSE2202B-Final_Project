@@ -314,129 +314,116 @@ void loop() {
 
     case 6:      //Putting tesseract between the tape lines when starting facing the corner
 
+      printSensorReadings();
 
 
-
-      /* //Diagnostic
-      if (bt_deposit_prepared == false) {
-        sweepServo(servo_wrist, ci_wrist_up+50);
-        moveTurntable(ci_turntable_wall_scan);
-        moveArm(ci_arm_pre_wall_scan);
-        moveArm(ci_arm_wall_scan_height);
-
-        bt_deposit_prepared = !bt_deposit_prepared;
-      }*/
-      //printSensorReadings(); //Diagnostic
-      //printEncoderValues(); //Diagnostic
-      //Serial.println((ci_lowcal_black - analogRead(ci_arm_linetracker_pin)) < (ci_lowcal_black - ci_lowcal_metal - 90));
+      
 
 
       //Making sure the magnet servo begins extended
       sweepServo(servo_magnet, ci_magnet_extend);
 
       if (bt_origin_orientation == false) {
-        while (frontPingSensor.ping_cm()  > 7) {
-          driveStraightAheadEncoders( mySpeed, 60);
-        }
+       while (frontPingSensor.ping_cm()  > 7) {
+         driveStraightAheadEncoders( mySpeed, 60);
+       }
       }
 
       if (bt_origin_orientation == false) { //If the robot is not in the orientation at the origin
-        if (frontLeftPingSensor.ping_cm() < frontRightPingSensor.ping_cm()) {
-          skidsteerNinetyRight(mySpeed);
-          //sweepServo(servo_wrist, ci_wrist_carry); //Diagnostic
-        }
-        else {
-          skidsteerNinetyLeft(mySpeed);
-          skidsteerNinetyLeft(mySpeed);
-          //sweepServo(servo_wrist, ci_wrist_up); //Diagnostic
-        }
-        bt_origin_orientation = true;
+       if (frontLeftPingSensor.ping_cm() < frontRightPingSensor.ping_cm()) {
+         skidsteerNinetyRight(mySpeed);
+         //sweepServo(servo_wrist, ci_wrist_carry); //Diagnostic
+       }
+       else {
+         skidsteerNinetyLeft(mySpeed);
+         skidsteerNinetyLeft(mySpeed);
+         //sweepServo(servo_wrist, ci_wrist_up); //Diagnostic
+       }
+       bt_origin_orientation = true;
       }
 
       if (bt_origin_orientation == true) {
 
-        if (!bt_deposit_prepared) { //&& (bt_origin_orientation)) {
-          // Now that the bot is facing the correct direction,
-          // with the starting wall on its left,
-          // Move the arm into position
-          sweepServo(servo_wrist, ci_wrist_up + 50);
-          moveTurntable(ci_turntable_wall_scan);
-          //moveArmSweep(ci_arm_pre_wall_scan);
-          moveArmSweep(ci_arm_wall_scan_height);
-          //sweepServo(servo_wrist, ci_wrist_push_away); //Diagnostic
+       if (!bt_deposit_prepared) { //&& (bt_origin_orientation)) {
+         // Now that the bot is facing the correct direction,
+         // with the starting wall on its left,
+         // Move the arm into position
+         sweepServo(servo_wrist, ci_wrist_up + 50);
+         moveTurntable(ci_turntable_wall_scan);
+         //moveArmSweep(ci_arm_pre_wall_scan);
+         moveArmSweep(ci_arm_wall_scan_height);
+         //sweepServo(servo_wrist, ci_wrist_push_away); //Diagnostic
 
-          ui_lowcal_metal = analogRead(ci_arm_linetracker_pin);
+         ui_lowcal_metal = analogRead(ci_arm_linetracker_pin);
 
 
-          //          int previous = millis();
-          //          for (int i = 0; i < 100;){
-          //            if ((millis() - previous) > 10) {
-          //              followWall(mySpeed, 'l', 3);
-          //              i++;
-          //              sweepServo(servo_wrist, ci_wrist_up);
-          //            }
-          //
-          //          }
+         //          int previous = millis();
+         //          for (int i = 0; i < 100;){
+         //            if ((millis() - previous) > 10) {
+         //              followWall(mySpeed, 'l', 3);
+         //              i++;
+         //              sweepServo(servo_wrist, ci_wrist_up);
+         //            }
+         //
+         //          }
 
-          // Drive forward ~15.5 in
-          /*
-          int previous = millis();
-          while ((millis() - previous) <= 1000 ) {
-            driveStraightAheadEncoders(mySpeed, 100);
-            parallelSpecial('l');
-          }
-          */
+         // Drive forward ~15.5 in
 
-          bt_origin_orientation = !bt_origin_orientation;
-          //bt_deposit_prepared = !bt_deposit_prepared;
-        }
 
-        // Drive backward while scanning until the reading is sheet metal (stop), then drive backward until hit the tape.
-        // Continue driving backward while the tape gets hit. Count the instances of reading tape.
-        // Deposit the tesseract in the last instance of an open space
-        
-        /*
-        while (ui_current_black < ui_tesseracts_left) {
-          //Drives backward until it sees a tape line
-          //if ((ci_lowcal_black - analogRead(ci_arm_linetracker_pin)) > (ci_lowcal_black - ci_lowcal_metal - 90)) {
-          if (analogRead(ci_arm_linetracker_pin) > ui_lowcal_metal) {
-            //Drive backward in 26 encoder tick increments ~ 1 cm
-            driveStraightReverseEncoders(mySpeed, 26);
-          }
-          //stopDrive();
+         bt_origin_orientation = !bt_origin_orientation;
+         //bt_deposit_prepared = !bt_deposit_prepared;
+       }
 
-          if (analogRead(ci_arm_linetracker_pin) > ui_lowcal_metal) {
-            ui_current_black++;
-            driveStraightReverseEncoders(mySpeed, 52); //Reverses another 2 cm ~ 52 encoder ticks
-          }
-        }
-        */
+       // Drive backward while scanning until the reading is sheet metal (stop), then drive backward until hit the tape.
+       // Continue driving backward while the tape gets hit. Count the instances of reading tape.
+       // Deposit the tesseract in the last instance of an open space
 
 
 
-        //Move the arm up to the calibration (cal) height to avoid hitting a waiting tesseract
-        //if ( analogRead(ci_arm_linetracker_pin) < ci_lowcal_metal)
+
+       //Move the arm up to the calibration (cal) height to avoid hitting a waiting tesseract
+       //if ( analogRead(ci_arm_linetracker_pin) < ci_lowcal_metal)
 
 
-        //Moves the arm into position to deposit the tesseract
-        moveArmSweep(ci_arm_carry_height);
-        sweepServo(servo_wrist, ci_wrist_dropoff);
-        servo_magnet.write(ci_magnet_retract);
+       //Moves the arm into position to deposit the tesseract
+       moveArmSweep(ci_arm_carry_height);
+       sweepServo(servo_wrist, ci_wrist_dropoff);
+       servo_magnet.write(ci_magnet_retract);
 
 
-        // after deposit, move arm//turntable back to carry position
-        moveArmSweep(ci_arm_carry_height);
-        sweepServo(servo_wrist, ci_wrist_parallel);
-        servo_magnet.write(ci_magnet_extend);
+       // after deposit, move arm//turntable back to carry position
+       moveArmSweep(ci_arm_carry_height);
+       sweepServo(servo_wrist, ci_wrist_parallel);
+       servo_magnet.write(ci_magnet_extend);
 
-        // Back to 1
-        mode = 1;
+       // Back to 1
+       mode = 1;
       }
-
-
+      
+      //High Five
+      moveArmSweep(420); //Blaze it. //Sets the arm vertically
+      skidsteerNinetyLeft(mySpeed);
+      //Wave
+      sweepServo(servo_wrist, ci_wrist_parallel);
+      sweepServo(servo_wrist, ci_wrist_dropoff);
+      skidsteerNinetyLeft(mySpeed);
+      //Wave
+      sweepServo(servo_wrist, ci_wrist_parallel);
+      sweepServo(servo_wrist, ci_wrist_dropoff);
+      skidsteerNinetyLeft(mySpeed);
+      sweepServo(servo_wrist, ci_wrist_parallel);
+      sweepServo(servo_wrist, ci_wrist_dropoff);
+      skidsteerNinetyLeft(mySpeed);
+      sweepServo(servo_wrist, ci_wrist_parallel);
+      sweepServo(servo_wrist, ci_wrist_dropoff);
+      
+      //Reset the arm position
+      moveArmSweep(ci_arm_carry_height);
+      sweepServo(servo_wrist, ci_wrist_parallel);
 
 
       break;       //end switch case 6
+ 
 
 
   }//end of switch case curly bracket

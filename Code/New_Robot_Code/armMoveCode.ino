@@ -21,7 +21,7 @@
 bool tesseractArmScan() {
   driveStraightReverseEncoders(1350, -150);    //backup an appropriate amount
   servo_magnet.write(ci_magnet_retract);  // retract magnet
-  moveArm(ci_arm_carry_height);  // move arm up
+  moveArmSweep(ci_arm_carry_height);  // move arm up
   sweepServo(servo_wrist, ci_wrist_parallel);  // wrist out?
   moveTurntable(ci_turntable_left);  // move turntable to far left position
   // take a hall effect reading out in the air to determine a sensor threshold
@@ -36,7 +36,7 @@ bool tesseractArmScan() {
   Serial.print(ci_hall_effect_scanning_threshold_min);
 
   // move arm to scanning height
-  moveArm(ci_arm_scanning_height);
+  moveArmSweep(ci_arm_scanning_height);
   // move wrist to 90 degrees down
   sweepServo(servo_wrist, ci_wrist_scan);
 
@@ -87,7 +87,7 @@ bool tesseractArmScan() {
     moveTurntable(tesseractAngle - 80); // move to best encoder value - offset, offset is due to the hall effect sensor being beside the arm magnet
     servo_magnet.write(ci_magnet_extend);         // extend magnet
     delay(200);                                   // give magnet time to slide over
-    moveArm(ci_arm_carry_height);                 // raise arm
+    moveArmSweep(ci_arm_carry_height);                 // raise arm
     sweepServo(servo_wrist, ci_wrist_carry);      // move wrist to carry
     moveTurntable(ci_turntable_center);           // center turntable
     return true;
@@ -98,13 +98,13 @@ bool tesseractArmScan() {
     // move wrist to parallal
     sweepServo(servo_wrist, ci_wrist_parallel);
     // drop arm
-    moveArm(ci_arm_push_away_height);
+    moveArmSweep(ci_arm_push_away_height);
     // move wrist to push away
     sweepServo(servo_wrist, ci_wrist_push_away);
     // sweep to far left
     moveTurntable(ci_turntable_left);
     // raise arm
-    moveArm(ci_arm_carry_height);
+    moveArmSweep(ci_arm_carry_height);
     //center turntable
     moveTurntable(ci_turntable_center);
     return false;
