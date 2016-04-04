@@ -468,3 +468,48 @@ void followWall(int ci_drive_speed, char wallSide, int desiredDistance) {
 //*************************************************************************************************************************************************
 //*************************************************************************************************************************************************
 //*************************************************************************************************************************************************
+
+
+
+
+
+
+
+// call this function to align the robot parallel to a side wall. Pass a character l or r (or L or R) to choose a side to align to
+void parallelSpecial(char wall) {
+  if ((wall == 'l') || (wall == 'L')) {     // if wall is on left side, use left ping sensor data
+    int error = frontLeftPingSensor.ping_cm() - backLeftPingSensor.ping_cm();     // if error is +'ve, turn towards wall
+    if (error > 0) {
+      // error is +'ve, turn towards wall
+      while (error > 0) {    // while error is +'ve, turn towards wall in increments
+        error = frontLeftPingSensor.ping_cm() - backLeftPingSensor.ping_cm();
+        skidsteerTinyLeft(1650);
+        delay(30);
+      }
+    }
+    else if (error < 0) {       // if error is -'ve, turn away from wall
+      while (error < 0) { // while error is -'ve, turn away from wall in small increments
+        error = (frontLeftPingSensor.ping_cm() - backLeftPingSensor.ping_cm());
+        skidsteerTinyRight(1650);
+        delay(30);
+      }
+    }
+  }
+  else  if ((wall == 'r') || (wall == 'R')) {   // if wall is on right side, use right side sensor data
+    int error = frontRightPingSensor.ping_cm() - backRightPingSensor.ping_cm();     // if error is +'ve, turn towards wall
+    if (error > 0) {                                                              // error is +'ve, turn towards wall
+      while (error > 0) {    // while error is +'ve, turn towards wall in increments
+        error = frontRightPingSensor.ping_cm() - backRightPingSensor.ping_cm();
+        skidsteerTinyRight(1650);
+        delay(30);
+      }
+    }
+    else if (error < 0) {                                                         // if error is -'ve, turn away from wall
+      while (error < 0) { // while error is -'ve, turn away from wall in small increments
+        error = frontRightPingSensor.ping_cm() - backRightPingSensor.ping_cm();
+        skidsteerTinyLeft(1650);
+        delay(30);
+      }
+    }
+  }
+}
