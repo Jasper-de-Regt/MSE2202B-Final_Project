@@ -91,16 +91,20 @@ void driveStraight(const int ci_drive_speed) {
 // for example this will drive straight ahead at speed 1600 until both motors have incremented 1000 encoder ticks:
 // driveStraightAheadEncoders(1600, 1000);
 // 1000 encoder ticks makes for about 15.5" or 39.4cm
-void driveStraightAheadEncoders(int ci_drive_speed, int desiredPosition) {
-
+bool driveStraightAheadEncoders(int ci_drive_speed, int desiredPosition) {
   // if it has been awhile since this function was called, update leftSpeed with the passed speed value and reset encoderTracker
-  if ((millis() - lastDriveStraightUpdateTime) > 40) {
-    leftSpeedDriveStraight = ci_drive_speed;
-    encoderTracker = 0;
-  }
+
+  leftSpeedDriveStraight = ci_drive_speed;
+  encoderTracker = 0;
+
 
   // while the encoder ticks have not surpassed the desiredposition, the function runs
   while (encoderTracker < desiredPosition) {
+
+    // if a tesseract is found during this movement, immediately return true
+    if (!digitalRead(ci_IR_crown_pin)) {
+      return true;
+    }
 
     // the left motor speed is updated every 20mS in this loop
     if ((millis() - lastDriveStraightUpdateTime) > 20) {
@@ -125,6 +129,7 @@ void driveStraightAheadEncoders(int ci_drive_speed, int desiredPosition) {
   }
   stopDrive();            // stop motors when call has finished
   encoderTracker = 0;     // logically this is redundant as its reset at the start of the call
+  return false; // signifies no tesseracts were found during this movement;
 }//****************end of driveStraightAHeadEncoders****************end of driveStraightAHeadEncoders****************
 //*************************************************************************************************************************************************
 //*************************************************************************************************************************************************
@@ -157,8 +162,7 @@ void driveStraightReverse(const int ci_drive_speed) {
     }
 
     leftSpeedDriveStraight = constrain(leftSpeedDriveStraight, 1000, 1500);  // constrain leftSpeedDriveStraight to values possible to send to servo
-    left_motor.writeMicroseconds(leftSpeedDriveStraight);        // set leftSpeedDriveStraight
-    right_motor.writeMicroseconds(ci_drive_speed);   // right motor runs constantly at the passed speed
+    left_motor.writeMicroseconds(leftSpeedDriveStraight);        // set leftSpeedDriveStraigh    right_motor.writeMicroseconds(ci_drive_speed);   // right motor runs constantly at the passed speed
 
     encoder_leftMotor.zero();    // zero encoders to prevent overflow errors
     encoder_rightMotor.zero();
@@ -183,11 +187,15 @@ void driveStraightReverse(const int ci_drive_speed) {
 // driveStraightReverseEncoders(1400, -1000);
 // 1000 encoder ticks makes for about 15.5" or 39.4cm
 //void driveStraightReverseEncoders(int ci_drive_speed, int encoderTicks) {
-void driveStraightReverseEncoders(int ci_drive_speed, int desiredPosition) {
+bool driveStraightReverseEncoders(int ci_drive_speed, int desiredPosition) {
   // if it has been awhile since this function was called, update leftSpeed with the passed speed value and reset encoderTracker
-  if ((millis() - lastDriveStraightUpdateTime) > 40) {
-    leftSpeedDriveStraight = ci_drive_speed - 10;
-    encoderTracker = 0;
+
+  leftSpeedDriveStraight = ci_drive_speed - 10;
+  encoderTracker = 0;
+
+  // if a tesseract is found during this movement, immediately return true
+  if (!digitalRead(ci_IR_crown_pin)) {
+    return true;
   }
 
   // while the encoder ticks have not surpassed the desiredposition, the function runs
@@ -218,6 +226,7 @@ void driveStraightReverseEncoders(int ci_drive_speed, int desiredPosition) {
   }
   stopDrive();            // stop motors when call has finished
   encoderTracker = 0;     // logically this is redundant as its reset at the start of the call
+  return false;
 }//****************end of driveStraightReverseEncoders****************end of driveStraightReverseEncoders****************
 //*************************************************************************************************************************************************
 //*************************************************************************************************************************************************
@@ -228,54 +237,104 @@ void driveStraightReverseEncoders(int ci_drive_speed, int desiredPosition) {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+//*************************************************************************************************************************************************
+//*************************************************************************************************************************************************
+//*************************************************************************************************************************************************
+//*************************************************************************************************************************************************
 // call this to do a 90 degree turn in place to the left
 // for example, this will pivot left 90 degrees at speed 1600:
 // skidsteerNinetyLeft(1600);
 void skidsteerNinetyLeft(int ci_drive_speed) {
-  encoder_rightMotor.zero();      // 0 both encoders
-  encoder_leftMotor.zero();
-  while ((encoder_rightMotor.getRawPosition() < 439) || (encoder_leftMotor.getRawPosition() > -439)) {     // turn to 90 degree encoder value, 900 encoder ticks makes for a 180
-    right_motor.writeMicroseconds(ci_drive_speed);
-    left_motor.writeMicroseconds(3000 - ci_drive_speed);
+  // if it has been awhile since this function was called, update leftSpeed with the passed speed value and reset encoderTracker
+  int desiredPosition = -439;   // 439 encoder ticks of each motor is a 90 degree turn
+  encoder_leftMotor.zero();    // zero encoders
+  encoder_rightMotor.zero();
+
+  leftSpeedDriveStraight = 3000 - ci_drive_speed;
+  encoderTracker = 0;
+
+  // while the encoder ticks have not surpassed the desiredposition, the function runs
+  while (encoderTracker > desiredPosition) {
+    // the left motor speed is updated every 20mS in this loop
+    if ((millis() - lastDriveStraightUpdateTime) > 20) {
+      int error = encoder_leftMotor.getRawPosition() + encoder_rightMotor.getRawPosition();  // error is the difference in .getRawPositions()
+      if (error < 0) {        // if the left motor went too far, slow it down, closer to 1500
+        leftSpeedDriveStraight += 15;
+      }
+      else if (error > 0) {       // else if the left motor didnt go far enough, speed it up, further from 1500, smaller
+        leftSpeedDriveStraight -= 15;
+      }
+      leftSpeedDriveStraight = constrain(leftSpeedDriveStraight, 1000, 1500);   // constrain leftSpeedDriveStraight to values possible to send to servo
+      left_motor.writeMicroseconds(leftSpeedDriveStraight);        // set leftSpeedDriveStraight
+      right_motor.writeMicroseconds(ci_drive_speed);  // the right motor constantly runs at the passed speed
+      encoderTracker += encoder_leftMotor.getRawPosition();  // tracks how far the encoder has moved
+      encoder_leftMotor.zero();    // zero encoders to prevent overflow errors
+      encoder_rightMotor.zero();
+      lastDriveStraightUpdateTime = millis();          // update last time the speeds were updated
+    }
   }
-  stopDrive();
+  stopDrive();            // stop motors when call has finished
+  encoderTracker = 0;     // logically this is redundant as its reset at the start of the call
 }//************************************************************************************************************************************************
+//*************************************************************************************************************************************************
+//*************************************************************************************************************************************************
+//*************************************************************************************************************************************************
+//*************************************************************************************************************************************************
 
 
-// call this to do a 90 degree turen in palce to the right
+
+
+
+//*************************************************************************************************************************************************
+//*************************************************************************************************************************************************
+//*************************************************************************************************************************************************
+//*************************************************************************************************************************************************
+// call this to do a 90 degree turn in palce to the right
 // for example, this will pivot right 90 degrees at speed 1600:
 // skidsteerNinetyRight(1600);
 void skidsteerNinetyRight(int ci_drive_speed) {
-  encoder_rightMotor.zero();      // 0 both encoders
-  encoder_leftMotor.zero();
-  while ((encoder_rightMotor.getRawPosition() > -439) || (encoder_leftMotor.getRawPosition() < 439)) {      // turn to 90 degree encoder value, 900 encoder ticks makes for a 180
-    right_motor.writeMicroseconds(3000 - ci_drive_speed);
-    left_motor.writeMicroseconds(ci_drive_speed);
+  // if it has been awhile since this function was called, update leftSpeed with the passed speed value and reset encoderTracker
+  int desiredPosition = 439;   // 439 encoder ticks of each motor is a 90 degree turn
+  encoder_leftMotor.zero();    // zero encoders
+  encoder_rightMotor.zero();
+  leftSpeedDriveStraight = ci_drive_speed;
+  encoderTracker = 0;
+  // while the encoder ticks have not surpassed the desiredposition, the function runs
+  while (encoderTracker < desiredPosition) {
+    // the left motor speed is updated every 20mS in this loop
+    if ((millis() - lastDriveStraightUpdateTime) > 20) {
+      int error = encoder_leftMotor.getRawPosition() + encoder_rightMotor.getRawPosition();  // error is the difference in .getRawPositions()
+      if (error > 0) {        // if the left motor went too far, slow it down
+        leftSpeedDriveStraight -= 15;
+      }
+      else if (error < 0) {       // else if the left motor didnt go far enough, speed it up
+        leftSpeedDriveStraight += 15;
+      }
+      leftSpeedDriveStraight = constrain(leftSpeedDriveStraight, 1500, 2000);   // constrain leftSpeedDriveStraight to values possible to send to servo
+      left_motor.writeMicroseconds(leftSpeedDriveStraight);        // set leftSpeedDriveStraight
+      right_motor.writeMicroseconds(3000 - ci_drive_speed);  // the right motor constantly runs at the passed speed
+      encoderTracker += encoder_leftMotor.getRawPosition();  // tracks how far the encoder has moved
+      encoder_leftMotor.zero();    // zero encoders to prevent overflow errors
+      encoder_rightMotor.zero();
+      lastDriveStraightUpdateTime = millis();          // update last time the speeds were updated
+    }
   }
-  stopDrive();
+  stopDrive();            // stop motors when call has finished
+  encoderTracker = 0;     // logically this is redundant as its reset at the start of the call
 }//****************end of skidsteerNinetyRight****************end of skidsteerNinetyRight****************
+//*************************************************************************************************************************************************
+//*************************************************************************************************************************************************
+//*************************************************************************************************************************************************
+//*************************************************************************************************************************************************
 
+
+
+
+
+//*************************************************************************************************************************************************
+//*************************************************************************************************************************************************
+//*************************************************************************************************************************************************
+//*************************************************************************************************************************************************
 // call this function to move further from a wall
 // start condition should be parallel to a wall
 // this will spin the robot in place 90 degrees so it faces away from the wall
@@ -295,13 +354,25 @@ void moveFurtherFromWall(int ci_drive_speed, char wallSide) {
     skidsteerNinetyRight(ci_drive_speed);            // turn 90 left again
   }
 }//****************end of moveFurtherFromWall****************end of moveFurtherFromWall****************
+//*************************************************************************************************************************************************
+//*************************************************************************************************************************************************
+//*************************************************************************************************************************************************
+//*************************************************************************************************************************************************
 
 
+
+
+
+//*************************************************************************************************************************************************
+//*************************************************************************************************************************************************
+//*************************************************************************************************************************************************
+//*************************************************************************************************************************************************
 // call this function to follow a wall.
 // for example, to drive at speed 1600 alongside a wall located to the right at a distance of 15 cm, call:
 // followWall(1600, 'r', 15);
 void followWall(int ci_drive_speed, char wallSide, int desiredDistance) {
   int speedModifier = (ci_drive_speed - 1500) / 3;    // how much to modify the speed for turns
+
   if ((ci_drive_speed - speedModifier * 1.5) < 1500) {    // ensure the motor wouldnt run in reverse
     speedModifier = (ci_drive_speed - 1500) / 1.5;
   }
@@ -393,4 +464,7 @@ void followWall(int ci_drive_speed, char wallSide, int desiredDistance) {
     }
   }                              // end of   if (wallside=='l')
 }//****************end of followWall****************end of followWall****************
-
+//*************************************************************************************************************************************************
+//*************************************************************************************************************************************************
+//*************************************************************************************************************************************************
+//*************************************************************************************************************************************************
