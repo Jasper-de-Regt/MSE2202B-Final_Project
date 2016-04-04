@@ -149,8 +149,9 @@ const int encodercm = 38.9;   //31.75encoder ticks per cm constant, derived expe
 const int ci_lowcal_black = 980;
 const int ci_lowcal_metal = 720;
 const int ci_lowcal_tesseract = 680;
+unsigned int ui_lowcal_metal = 0; // Needs to be updated
 const int ci_wrist_up = 110;
-const int ci_wrist_dropoff = 50;
+const int ci_wrist_dropoff = 30;
 const int ci_arm_pre_wall_scan = 230;
 const int ci_arm_wall_scan_height = -20;
 const int ci_turntable_wall_scan = 230;
@@ -357,8 +358,19 @@ void loop() {
           moveArmSweep(ci_arm_wall_scan_height);
           //sweepServo(servo_wrist, ci_wrist_push_away); //Diagnostic
 
+          ui_lowcal_metal = analogRead(ci_arm_linetracker_pin);
+          
+          int previous = millis();
+          for (int i = 0; i < 100;){
+            if ((millis() - previous) > 10) {
+              followWall(mySpeed, 'l', 3);
+              i++;
+              sweepServo(servo_wrist, ci_wrist_up);
+            }
+            
+          }
           // Drive forward ~15.5 in
-          driveStraightAheadEncoders(mySpeed, 1000);
+          //driveStraightAheadEncoders(mySpeed, 1000);
           //parallel function
           
           bt_origin_orientation = !bt_origin_orientation;
@@ -372,13 +384,13 @@ void loop() {
         while (ui_current_black < ui_tesseracts_left) {
           //Drives backward until it sees a tape line
           //if ((ci_lowcal_black - analogRead(ci_arm_linetracker_pin)) > (ci_lowcal_black - ci_lowcal_metal - 90)) {
-          if (analogRead(ci_arm_linetracker_pin) > ci_lowcal_metal) {
+          if (analogRead(ci_arm_linetracker_pin) > ui_lowcal_metal) {
             //Drive backward in 26 encoder tick increments ~ 1 cm
             driveStraightReverseEncoders(mySpeed, 26);
           }
           //stopDrive(); 
 
-          if (analogRead(ci_arm_linetracker_pin) > ci_lowcal_metal) {
+          if (analogRead(ci_arm_linetracker_pin) > ui_lowcal_metal) {
             ui_current_black++;
             driveStraightReverseEncoders(mySpeed, 52); //Reverses another 2 cm ~ 52 encoder ticks
           }
