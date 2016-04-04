@@ -140,9 +140,21 @@ void setup() {
 
 char wall = 'l';  // which side the wall is on when calling wall follow
 int dis = 15;     // distance to drive from wall
-int mode = 1;     // switchcase variable
+int mode = 6;     // switchcase variable
 bool found = false; // has a tesseract been found
 const int encodercm = 38.9;   //31.75encoder ticks per cm constant, derived experimentally
+
+//Chris Variables
+// Values determined experimentally
+const int ci_lowcal_black = 980;
+const int ci_lowcal_metal = 720;
+const int ci_lowcal_tesseract = 680;
+const int ci_wrist_up = 145;
+bool bt_origin_orientation = false;
+unsigned int ui_current_black = 0; // Measures the current number of black tape lines it has seen. 0 is measured as furthest from the origin
+unsigned int ui_tesseracts_left = 3; // Measures the number of tesseracts left to collect
+
+
 int mySpeed = 1630;
 #define maincode;
 
@@ -293,6 +305,67 @@ void loop() {
       mode = 6;
       break;    // end switch case 4
 
+    case 6:      //Putting tesseract between the tape lines when starting facing the corner
+
+      //printSensorReadings(); //Diagnostic
+      //Serial.println(analogRead(ci_arm_linetracker_pin)- (ci_lowcal_black-ci_lowcal_metal)/2);
+
+      
+      if (!bt_origin_orientation) { //If the
+        if (frontLeftPingSensor.ping_cm() < frontRightPingSensor.ping_cm()) {
+          skidsteerNinetyRight(mySpeed);
+          //sweepServo(servo_wrist, ci_wrist_carry); //Diagnostic
+        }
+        else {
+          skidsteerNinetyLeft(mySpeed);
+          skidsteerNinetyLeft(mySpeed);
+          //sweepServo(servo_wrist, ci_wrist_up); //Diagnostic
+        }
+        bt_origin_orientation = true;
+      }
+      else {
+        // Now that the bot is facing the correct direction,
+        // with the starting wall on its left,
+        // Move the arm into position
+        moveTurntable(ci_turntable_left);
+        moveArm(ci_arm_scanning_height);
+        //sweepServo(servo_wrist, ci_wrist_push_away); //Diagnostic
+
+        // Drive forward ~15.5 in
+        driveStraightAheadEncoders(mySpeed, 1000);
+
+        // Drive backward while scanning until the reading is sheet metal (stop), then drive backward until hit the tape.
+        // Continue driving backward while the tape gets hit. Count the instances of reading tape.
+        // Deposit the tesseract in the last instance of an open space
+
+        if (ui_current_black < ui_tesseracts_left) {
+          //Drives backward until it sees a tape line
+          while ( analogRead(ci_arm_linetracker_pin)  < ((ci_lowcal_black - ci_lowcal_metal) / 2) ) {
+            //Drive backward in 26 encoder tick increments ~ 1 cm
+            driveStraightReverseEncoders(mySpeed, 26);
+
+          }
+          stopDrive();
+          driveStraightReverseEncoders(mySpeed, 52); //Reverses another 2 cm ~ 52 encoder ticks
+          ui_current_black++;
+        }
+        
+        
+        //Move the arm up to the calibration (cal) height to avoid hitting a waiting tesseract
+        //if ( analogRead(ci_arm_linetracker_pin) < ci_lowcal_metal) 
+        
+        
+        //Moves the arm into position to deposit the tesseract 
+        moveArm(ci_arm_carry_height);
+        sweepServo(servo_wrist, ci_wrist_carry);
+        servo_magnet.write(ci_magnet_retract);
+        
+        
+      }
+      
+      
+      break;       //end switch case 6
+
 
   }//end of switch case curly bracket
 #endif
@@ -379,7 +452,7 @@ void parallelLeft(int ci_drive_speed) {
         }
         leftSpeedDriveStraight = constrain(leftSpeedDriveStraight, 1500, 2000);   // constrain leftSpeedDriveStraight to values possible to send to servo
         left_motor.writeMicroseconds(leftSpeedDriveStraight);        // set leftSpeedDriveStraight
-        right_motor.writeMicroseconds(3000-ci_drive_speed);  // the right motor constantly runs at the passed speed
+        right_motor.writeMicroseconds(3000 - ci_drive_speed); // the right motor constantly runs at the passed speed
         encoderTracker += encoder_leftMotor.getRawPosition();  // tracks how far the encoder has moved
         encoder_leftMotor.zero();    // zero encoders to prevent overflow errors
         encoder_rightMotor.zero();
