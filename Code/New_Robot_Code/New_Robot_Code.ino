@@ -167,15 +167,6 @@ void setup() {
 
 
 void loop() {
-  Serial.print("Left: ");
-  Serial.println(encoder_leftMotor.getRawPosition());
-  Serial.print("Right: ");
-  Serial.println(encoder_rightMotor.getRawPosition());
-  /*
-    Serial.print("Arm: ");
-    Serial.println(encoder_arm_motor.getRawPosition());
-    Serial.print("Turntable: ");
-    Serial.println(encoder_turntable_motor.getRawPosition());
-  */
+  followWallReverse(1400, 'r', 10);
 }
 
