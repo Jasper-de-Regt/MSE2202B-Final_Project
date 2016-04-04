@@ -113,7 +113,7 @@ void setup() {
   pinMode(ci_wrist_servo_pin, OUTPUT);
   servo_wrist.attach(ci_wrist_servo_pin);
   pinMode(ci_magnet_servo_pin, OUTPUT);
-  servo_magnet.attach(ci_magnet_servo_pin);
+  servo_magnet.attach(ci_magnet_servo_pin); servo_magnet.write(10); //Fixes a startup drop-off issue.
   // sensor setups
   pinMode(ci_IR_crown_pin, INPUT);
   pinMode(ci_arm_linetracker_pin, INPUT);
@@ -151,7 +151,7 @@ const int ci_lowcal_metal = 720;
 const int ci_lowcal_tesseract = 680;
 const int ci_wrist_up = 110;
 const int ci_arm_pre_wall_scan = 230;
-const int ci_arm_wall_scan_height = 30;
+const int ci_arm_wall_scan_height = 10;
 const int ci_turntable_wall_scan = 230;
 bool bt_origin_orientation = false;
 bool bt_deposit_prepared = false;
@@ -311,7 +311,11 @@ void loop() {
       break;    // end switch case 4
 
     case 6:      //Putting tesseract between the tape lines when starting facing the corner
-
+    
+    //Making sure the magnet servo begins extended
+    sweepServo(servo_magnet, ci_magnet_extend);
+    
+    
       /* //Diagnostic
       if (bt_deposit_prepared == false) {
         sweepServo(servo_wrist, ci_wrist_up+50);
@@ -326,7 +330,7 @@ void loop() {
       //Serial.println((ci_lowcal_black - analogRead(ci_arm_linetracker_pin)) < (ci_lowcal_black - ci_lowcal_metal - 90));
 
 
-
+ 
 
       if (!bt_origin_orientation) { //If the robot is not in the orientation at the origin
         if (frontLeftPingSensor.ping_cm() < frontRightPingSensor.ping_cm()) {
@@ -348,12 +352,13 @@ void loop() {
           // Move the arm into position
           sweepServo(servo_wrist, ci_wrist_up + 50);
           moveTurntable(ci_turntable_wall_scan);
-          moveArm(ci_arm_pre_wall_scan);
-          moveArm(ci_arm_wall_scan_height);
+          moveArmSweep(ci_arm_pre_wall_scan);
+          moveArmSweep(ci_arm_wall_scan_height);
           //sweepServo(servo_wrist, ci_wrist_push_away); //Diagnostic
 
           // Drive forward ~15.5 in
           driveStraightAheadEncoders(mySpeed, 1000);
+          //parallel function
 
           bt_deposit_prepared = !bt_deposit_prepared;
         }
@@ -367,7 +372,6 @@ void loop() {
           if ((ci_lowcal_black - analogRead(ci_arm_linetracker_pin)) < (ci_lowcal_black - ci_lowcal_metal - 90)) {
             //Drive backward in 26 encoder tick increments ~ 1 cm
             driveStraightReverseEncoders(mySpeed, 26);
-
           }
           stopDrive();
           driveStraightReverseEncoders(mySpeed, 52); //Reverses another 2 cm ~ 52 encoder ticks
@@ -384,15 +388,15 @@ void loop() {
 
 
         //Moves the arm into position to deposit the tesseract
-        moveArm(ci_arm_carry_height);
+        moveArmSweep(ci_arm_carry_height);
         sweepServo(servo_wrist, ci_wrist_carry);
         servo_magnet.write(ci_magnet_retract);
 
 
         // after deposit, move arm//turntable back to carry position
-        moveArm(ci_arm_carry_height);
+        moveArmSweep(ci_arm_carry_height);
         sweepServo(servo_wrist, ci_wrist_parallel);
-        servo_magnet.write(ci_magnet_retract);
+        servo_magnet.write(ci_magnet_extend);
         
         //back to 1
         mode = 1;
@@ -409,6 +413,24 @@ void loop() {
 }//end loop curly bracket
 
 
+// this function sweeps the arm using the regular move arm function
+void moveArmSweep(int desiredPosition) {
+  int startPosition = encoder_arm.getRawPosition();
+  int error = desiredPosition - startPosition;
+  int iterations = error / 10;
+  iterations = abs(iterations);
+
+  if (error > 0) {   // arm needs to move up
+    for (int i = 0; i < iterations; i++) {
+      moveArm(startPosition + 10 * i);
+    }
+  }
+  else if ( error < 0) { //arm needs to move down
+    for (int i = 0; i < iterations; i++) {
+      moveArm(startPosition - 10 * i);
+    }
+  }
+}
 
 
 void parallel() {
@@ -437,6 +459,8 @@ void parallel() {
 
   stopDrive();
 }
+
+
 
 
 

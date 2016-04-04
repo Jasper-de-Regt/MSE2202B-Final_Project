@@ -7,7 +7,7 @@ Servo myservo;  // create servo object to control a servo
 
 void setup() {
   Serial.begin(9600);               // pour a bowl of serial
-  myservo.attach(5, 500, 2500);    // the pin (9) for the servo control, and range of motion (0-180 degrees)
+  myservo.attach(4, 500, 2500);    // the pin (9) for the servo control, and range of motion (0-180 degrees)
   Serial.println("servo-test");     // beautiful message for serial monitor
 }
 
