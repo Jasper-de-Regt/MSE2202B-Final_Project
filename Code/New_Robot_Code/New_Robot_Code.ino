@@ -144,7 +144,7 @@ int mode = 1;     // switchcase variable
 bool found = false; // has a tesseract been found
 const int encodercm = 38.9;   //31.75encoder ticks per cm constant, derived experimentally
 int mySpeed = 1630;
-#define maincode;
+//#define maincode;
 
 // garbage variables
 int temps;
@@ -163,7 +163,22 @@ void loop() {
   // while not detecting a tesseract
   // 25.381 encoder ticks/cm;
   //followWall(mySpeed, 'r', 20);
-
+  Serial.println("starting 20");
+  moveArmSweep(20);
+  Serial.println("done 20");
+  delay(3000);
+  Serial.println("starting 220");
+  moveArmSweep(220);
+  Serial.println("done 220");
+  delay(3000);
+  Serial.println("starting 650");
+  moveArmSweep(650);
+  Serial.println("done 650");
+  delay(3000);
+  Serial.println("starting 420");
+  moveArmSweep(420);
+  Serial.println("done 420");
+  delay(3000);
 
 
 #ifdef maincode
@@ -300,6 +315,28 @@ void loop() {
 
 
 
+// this function sweeps the arm using the regular move arm function
+void moveArmSweep(int desiredPosition) {
+  int startPosition = encoder_arm.getRawPosition();
+  int error = desiredPosition - startPosition;
+  int iterations = error / 10;
+  iterations = abs(iterations);
+
+  if (error > 0) {   // arm needs to move up
+    for (int i = 0; i < iterations; i++) {
+      moveArm(startPosition + 10 * i);
+    }
+  }
+  else if ( error < 0) { //arm needs to move down
+    for (int i = 0; i < iterations; i++) {
+      moveArm(startPosition - 10 * i);
+    }
+  }
+}
+
+
+
+
 
 void parallel() {
 
@@ -335,6 +372,17 @@ void parallelLeft(int ci_drive_speed) {
   int desiredPosition = -439;   // 439 encoder ticks of each motor is a 90 degree turn
   encoder_leftMotor.zero();    // zero encoders
   encoder_rightMotor.zero();
+
+
+
+  // assuming wall is on right side
+  // spin wheel motors until
+
+  // if the front sensor
+
+
+
+
 
 
 
@@ -379,7 +427,7 @@ void parallelLeft(int ci_drive_speed) {
         }
         leftSpeedDriveStraight = constrain(leftSpeedDriveStraight, 1500, 2000);   // constrain leftSpeedDriveStraight to values possible to send to servo
         left_motor.writeMicroseconds(leftSpeedDriveStraight);        // set leftSpeedDriveStraight
-        right_motor.writeMicroseconds(3000-ci_drive_speed);  // the right motor constantly runs at the passed speed
+        right_motor.writeMicroseconds(3000 - ci_drive_speed); // the right motor constantly runs at the passed speed
         encoderTracker += encoder_leftMotor.getRawPosition();  // tracks how far the encoder has moved
         encoder_leftMotor.zero();    // zero encoders to prevent overflow errors
         encoder_rightMotor.zero();
