@@ -522,3 +522,94 @@ void parallelSpecial(char wall) {
 
 
 
+
+
+//*************************************************************************************************************************************************
+//*************************************************************************************************************************************************
+//*************************************************************************************************************************************************
+//*************************************************************************************************************************************************
+// call this to turn a very small amount left, just one encoder tick
+// for example, this will pivot left a single degrees at speed 1600:
+// skidsteerTinyLeft(1600);
+void skidsteerTinyLeft(int ci_drive_speed) {
+  // if it has been awhile since this function was called, update leftSpeed with the passed speed value and reset encoderTracker
+  int desiredPosition = -1;   // 439 encoder ticks of each motor is a 90 degree turn
+  encoder_leftMotor.zero();    // zero encoders
+  encoder_rightMotor.zero();
+
+  leftSpeedDriveStraight = 3000 - ci_drive_speed;
+  encoderTracker = 0;
+
+  // while the encoder ticks have not surpassed the desiredposition, the function runs
+  while (encoderTracker > desiredPosition) {
+    // the left motor speed is updated every 20mS in this loop
+    if ((millis() - lastDriveStraightUpdateTime) > 20) {
+      int error = encoder_leftMotor.getRawPosition() + encoder_rightMotor.getRawPosition();  // error is the difference in .getRawPositions()
+      if (error < 0) {        // if the left motor went too far, slow it down, closer to 1500
+        leftSpeedDriveStraight += 15;
+      }
+      else if (error > 0) {       // else if the left motor didnt go far enough, speed it up, further from 1500, smaller
+        leftSpeedDriveStraight -= 15;
+      }
+      leftSpeedDriveStraight = constrain(leftSpeedDriveStraight, 1000, 1500);   // constrain leftSpeedDriveStraight to values possible to send to servo
+      left_motor.writeMicroseconds(leftSpeedDriveStraight);        // set leftSpeedDriveStraight
+      right_motor.writeMicroseconds(ci_drive_speed);  // the right motor constantly runs at the passed speed
+      encoderTracker += encoder_leftMotor.getRawPosition();  // tracks how far the encoder has moved
+      encoder_leftMotor.zero();    // zero encoders to prevent overflow errors
+      encoder_rightMotor.zero();
+      lastDriveStraightUpdateTime = millis();          // update last time the speeds were updated
+    }
+  }
+  stopDrive();            // stop motors when call has finished
+  encoderTracker = 0;     // logically this is redundant as its reset at the start of the call
+}//************************************************************************************************************************************************
+//*************************************************************************************************************************************************
+//*************************************************************************************************************************************************
+//*************************************************************************************************************************************************
+//*************************************************************************************************************************************************
+
+
+
+
+
+//*************************************************************************************************************************************************
+//*************************************************************************************************************************************************
+//*************************************************************************************************************************************************
+//*************************************************************************************************************************************************
+// call this to do a 1 encoder tick turn right in palce
+// for example, this will pivot right 1 encoder tick at speed 1600:
+// skidsteerTinyRight(1600);
+void skidsteerTinyRight(int ci_drive_speed) {
+  // if it has been awhile since this function was called, update leftSpeed with the passed speed value and reset encoderTracker
+  int desiredPosition = 1;   // 439 encoder ticks of each motor is a 90 degree turn
+  encoder_leftMotor.zero();    // zero encoders
+  encoder_rightMotor.zero();
+  leftSpeedDriveStraight = ci_drive_speed;
+  encoderTracker = 0;
+  // while the encoder ticks have not surpassed the desiredposition, the function runs
+  while (encoderTracker < desiredPosition) {
+    // the left motor speed is updated every 20mS in this loop
+    if ((millis() - lastDriveStraightUpdateTime) > 20) {
+      int error = encoder_leftMotor.getRawPosition() + encoder_rightMotor.getRawPosition();  // error is the difference in .getRawPositions()
+      if (error > 0) {        // if the left motor went too far, slow it down
+        leftSpeedDriveStraight -= 15;
+      }
+      else if (error < 0) {       // else if the left motor didnt go far enough, speed it up
+        leftSpeedDriveStraight += 15;
+      }
+      leftSpeedDriveStraight = constrain(leftSpeedDriveStraight, 1500, 2000);   // constrain leftSpeedDriveStraight to values possible to send to servo
+      left_motor.writeMicroseconds(leftSpeedDriveStraight);        // set leftSpeedDriveStraight
+      right_motor.writeMicroseconds(3000 - ci_drive_speed);  // the right motor constantly runs at the passed speed
+      encoderTracker += encoder_leftMotor.getRawPosition();  // tracks how far the encoder has moved
+      encoder_leftMotor.zero();    // zero encoders to prevent overflow errors
+      encoder_rightMotor.zero();
+      lastDriveStraightUpdateTime = millis();          // update last time the speeds were updated
+    }
+  }
+  stopDrive();            // stop motors when call has finished
+  encoderTracker = 0;     // logically this is redundant as its reset at the start of the call
+}//****************end of skidsteerTinyRight****************end of skidsteerTinyRight****************
+//*************************************************************************************************************************************************
+//*************************************************************************************************************************************************
+//*************************************************************************************************************************************************
+//*************************************************************************************************************************************************
