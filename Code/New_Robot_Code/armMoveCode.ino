@@ -239,3 +239,29 @@ void moveArm(int desiredPosition) {
   }
   counter = 0;
 }//****************end moveArm fn****************end moveArm fn****************
+
+
+
+
+
+// this function sweeps the arm using the regular move arm function
+// this makes for small stuttering movement, bnutt he end result is smooth and accurate without overshoot
+// remove the overshoot due to momentum during arm movements
+void moveArmSweep(int desiredPosition) {
+  int startPosition = encoder_arm.getRawPosition();
+  int error = desiredPosition - startPosition;
+  int iterations = error / 10;
+  iterations = abs(iterations);
+
+  if (error > 0) {   // arm needs to move up
+    for (int i = 0; i < iterations; i++) {
+      moveArm(startPosition + 10 * i);
+    }
+  }
+  else if ( error < 0) { //arm needs to move down
+    for (int i = 0; i < iterations; i++) {
+      moveArm(startPosition - 10 * i);
+    }
+  }
+}//****************end moveArmSweep fn****************end moveArmSweep fn****************
+
