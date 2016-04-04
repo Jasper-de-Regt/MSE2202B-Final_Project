@@ -140,7 +140,7 @@ void setup() {
 
 char wall = 'l';  // which side the wall is on when calling wall follow
 int dis = 15;     // distance to drive from wall
-int mode = 6;     // switchcase variable
+int mode = 1;     // switchcase variable
 bool found = false; // has a tesseract been found
 const int encodercm = 38.9;   //31.75encoder ticks per cm constant, derived experimentally
 
@@ -313,10 +313,10 @@ void loop() {
       break;    // end switch case 4
 
     case 6:      //Putting tesseract between the tape lines when starting facing the corner
-    
-      
-     
-    
+
+
+
+
       /* //Diagnostic
       if (bt_deposit_prepared == false) {
         sweepServo(servo_wrist, ci_wrist_up+50);
@@ -329,16 +329,18 @@ void loop() {
       //printSensorReadings(); //Diagnostic
       //printEncoderValues(); //Diagnostic
       //Serial.println((ci_lowcal_black - analogRead(ci_arm_linetracker_pin)) < (ci_lowcal_black - ci_lowcal_metal - 90));
-      
-      
+
+
       //Making sure the magnet servo begins extended
       sweepServo(servo_magnet, ci_magnet_extend);
-      
-      while (frontPingSensor.ping_cm()  > 7) {
-        driveStraightAheadEncoders( mySpeed, 60);
+
+      if (bt_origin_orientation == false) {
+        while (frontPingSensor.ping_cm()  > 7) {
+          driveStraightAheadEncoders( mySpeed, 60);
+        }
       }
 
-      if (!bt_origin_orientation) { //If the robot is not in the orientation at the origin
+      if (bt_origin_orientation == false) { //If the robot is not in the orientation at the origin
         if (frontLeftPingSensor.ping_cm() < frontRightPingSensor.ping_cm()) {
           skidsteerNinetyRight(mySpeed);
           //sweepServo(servo_wrist, ci_wrist_carry); //Diagnostic
@@ -350,7 +352,8 @@ void loop() {
         }
         bt_origin_orientation = true;
       }
-      else {
+
+      if (bt_origin_orientation == true) {
 
         if (!bt_deposit_prepared) { //&& (bt_origin_orientation)) {
           // Now that the bot is facing the correct direction,
@@ -363,25 +366,27 @@ void loop() {
           //sweepServo(servo_wrist, ci_wrist_push_away); //Diagnostic
 
           ui_lowcal_metal = analogRead(ci_arm_linetracker_pin);
-          
-          
-//          int previous = millis();
-//          for (int i = 0; i < 100;){
-//            if ((millis() - previous) > 10) {
-//              followWall(mySpeed, 'l', 3);
-//              i++;
-//              sweepServo(servo_wrist, ci_wrist_up);
-//            }
-//            
-//          }
+
+
+          //          int previous = millis();
+          //          for (int i = 0; i < 100;){
+          //            if ((millis() - previous) > 10) {
+          //              followWall(mySpeed, 'l', 3);
+          //              i++;
+          //              sweepServo(servo_wrist, ci_wrist_up);
+          //            }
+          //
+          //          }
 
           // Drive forward ~15.5 in
+          /*
           int previous = millis();
           while ((millis() - previous) <= 1000 ) {
             driveStraightAheadEncoders(mySpeed, 100);
             parallelSpecial('l');
           }
-          
+          */
+
           bt_origin_orientation = !bt_origin_orientation;
           //bt_deposit_prepared = !bt_deposit_prepared;
         }
@@ -389,7 +394,8 @@ void loop() {
         // Drive backward while scanning until the reading is sheet metal (stop), then drive backward until hit the tape.
         // Continue driving backward while the tape gets hit. Count the instances of reading tape.
         // Deposit the tesseract in the last instance of an open space
-
+        
+        /*
         while (ui_current_black < ui_tesseracts_left) {
           //Drives backward until it sees a tape line
           //if ((ci_lowcal_black - analogRead(ci_arm_linetracker_pin)) > (ci_lowcal_black - ci_lowcal_metal - 90)) {
@@ -397,13 +403,14 @@ void loop() {
             //Drive backward in 26 encoder tick increments ~ 1 cm
             driveStraightReverseEncoders(mySpeed, 26);
           }
-          //stopDrive(); 
+          //stopDrive();
 
           if (analogRead(ci_arm_linetracker_pin) > ui_lowcal_metal) {
             ui_current_black++;
             driveStraightReverseEncoders(mySpeed, 52); //Reverses another 2 cm ~ 52 encoder ticks
           }
         }
+        */
 
 
 
@@ -421,8 +428,8 @@ void loop() {
         moveArmSweep(ci_arm_carry_height);
         sweepServo(servo_wrist, ci_wrist_parallel);
         servo_magnet.write(ci_magnet_extend);
-        
-        //back to 1
+
+        // Back to 1
         mode = 1;
       }
 
