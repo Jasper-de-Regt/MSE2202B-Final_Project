@@ -10,6 +10,24 @@
 
 
 
+// this function sweeps the arm using the regular move arm function
+void moveArmSweep(int desiredPosition) {
+  int startPosition = encoder_arm.getRawPosition();
+  int error = desiredPosition - startPosition;
+  int iterations = error / 10;
+  iterations = abs(iterations);
+
+  if (error > 0) {   // arm needs to move up
+    for (int i = 0; i < iterations; i++) {
+      moveArm(startPosition + 10 * i);
+    }
+  }
+  else if ( error < 0) { //arm needs to move down
+    for (int i = 0; i < iterations; i++) {
+      moveArm(startPosition - 10 * i);
+    }
+  }
+}
 
 
 
