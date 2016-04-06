@@ -1,4 +1,4 @@
-
+// prototype functions
 void stopTurntable() {
   turntable_motor.writeMicroseconds(1500);
 }
@@ -59,14 +59,14 @@ void tesseractScanSweep(int maxPosition) {
 void servoMoveToPosition(Servo serv0, int final_Position) {
   long previous = millis();
   while (serv0.read() != final_Position) {
-//    if ((millis() - previous) >= timeDifference) {
-      if (serv0.read() > final_Position) {
-        serv0.write(serv0.read() - 1);
-      }
-      if (serv0.read() < final_Position) {
-        serv0.write(serv0.read() + 1);
-      }
-      previous = millis();
+    //    if ((millis() - previous) >= timeDifference) {
+    if (serv0.read() > final_Position) {
+      serv0.write(serv0.read() - 1);
     }
+    if (serv0.read() < final_Position) {
+      serv0.write(serv0.read() + 1);
+    }
+    previous = millis();
   }
+}
 

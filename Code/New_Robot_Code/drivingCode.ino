@@ -335,38 +335,6 @@ void skidsteerNinetyRight(int ci_drive_speed) {
 //*************************************************************************************************************************************************
 //*************************************************************************************************************************************************
 //*************************************************************************************************************************************************
-// call this function to move further from a wall
-// start condition should be parallel to a wall
-// this will spin the robot in place 90 degrees so it faces away from the wall
-// then the robot will drive straight forward (away from wall)
-// then the robot will spin in place 90 degrees so it faces opposite start direction (now further from the wall)
-// return. At this point the robot is parallel to the wall, further away than before, and facing the opposite direction
-// wallSide is a char indicating on which side of the robot the wall is when making the function call.
-void moveFurtherFromWall(int ci_drive_speed, char wallSide) {
-  if ((wallSide == 'R') || (wallSide == 'r')) { // if wall is on right
-    skidsteerNinetyLeft(ci_drive_speed);            // turn 90 left
-    driveStraightAheadEncoders(1600, 203);      // drive head ~8cm
-    skidsteerNinetyLeft(ci_drive_speed);            // turn 90 left again
-  }
-  if ((wallSide == 'L') || (wallSide == 'l')) { // if wall is on right
-    skidsteerNinetyRight(ci_drive_speed);            // turn 90 left
-    driveStraightAheadEncoders(1600, 203);      // drive head ~8cm
-    skidsteerNinetyRight(ci_drive_speed);            // turn 90 left again
-  }
-}//****************end of moveFurtherFromWall****************end of moveFurtherFromWall****************
-//*************************************************************************************************************************************************
-//*************************************************************************************************************************************************
-//*************************************************************************************************************************************************
-//*************************************************************************************************************************************************
-
-
-
-
-
-//*************************************************************************************************************************************************
-//*************************************************************************************************************************************************
-//*************************************************************************************************************************************************
-//*************************************************************************************************************************************************
 // call this function to follow a wall.
 // for example, to drive at speed 1600 alongside a wall located to the right at a distance of 15 cm, call:
 // followWall(1600, 'r', 15);
@@ -476,7 +444,7 @@ void followWall(int ci_drive_speed, char wallSide, int desiredDistance) {
 
 
 // call this function to align the robot parallel to a side wall. Pass a character l or r (or L or R) to choose a side to align to
-void parallelSpecial(char wall) {
+void parallel(char wall) {
   if ((wall == 'l') || (wall == 'L')) {     // if wall is on left side, use left ping sensor data
     int error = frontLeftPingSensor.ping_cm() - backLeftPingSensor.ping_cm();     // if error is +'ve, turn towards wall
     if (error > 0) {

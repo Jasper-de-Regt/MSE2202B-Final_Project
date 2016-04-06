@@ -1,3 +1,5 @@
+// prototype navigation code
+
 #ifndef navigation
 #define navigation
 
