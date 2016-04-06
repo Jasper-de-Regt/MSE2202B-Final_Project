@@ -1,0 +1,20 @@
+Meeting  - start at 11:30 am 
+	- all attending
+ 
+Ideas to detect tesseracts: 
+- Whisker switches all around the device 
+- An arm on the device with an IR sensor to detect both good and bad tesseracts. 
+- A photo gate on the front of the device 
+- One large switch on the front of the device 
+ 
+**Switch-based ideas would need a bumper to sweep bad tesseracts out of the way. 
+ 
+Problem with switch based ideas: potential to bump the cube into a wall. 
+ 
+Possible alternatives:  
+- Photogate method 
+- Ultrasonic sensor OR whisker switch to detect any tesseracts close to the way that may have been missed by the photo gate. 
+ 
+Plan to return later for another meeting from 1:30 pm to 2:30 pm. 
+ 
+End 12:22 pm

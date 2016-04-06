@@ -1,0 +1,32 @@
+Nineth Meeting Notes - start at 1:30 pm 
+		- all attending
+
+Possible problem with photo gates is the connections used to hold the gates may bump the tesseracts together or into a wall.
+ -> If the tesseracts get bumped together that's game over.
+
+Proposed solution:
+	Use a cup that can fit only one tesseract when a magnet is being used to pick it up.
+
+Solution to photo gate problem:
+	Use a downward facing ultrasonic sensor to detect tesseracts. This would act like a proximity curtain which would be used to send a control signal to stop the motors.
+
+Algorithm for moving through the arena:
+	Drive from the origin until detecting a tesseract or detecting a wall.
+	->	If a good tesseract, pick it up and go back to the origin.
+	->	If a bad tesseract, move it out of the way.
+	->	If wall detected, turn 180 degrees around an arc and 
+		proceed in a straight line until the next wall.
+
+Decided that instead of ultrasonic sensors, we're going to use light sensors from the 1st bot.
+Justification: Their short range makes them more appropriate for that task than using an ultrasonic sensor.
+
+Meeting tomorrow at 9 am outside the lab.
+
+Mike - ultrasonic testing
+Tyler - light sensor testing & SolidWorks model of magnet holder
+Jasper - may CAD new drive base
+Chris - detecting tesseracts in mode 2, mechanical system configuration - (coding?)
+
+Naish said that the robot will be disqualified if it lets two tesseracts touch each other.
+
+Meeting End at 2:30 pm

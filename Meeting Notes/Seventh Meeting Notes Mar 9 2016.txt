@@ -1,0 +1,9 @@
+Group Meeting - start at 1:30 pm
+	- all attending
+
+Tyler & Michael - testing the ultrasonic sensor.
+Jasper - drawing up a CAD model of a sensor holder.
+Chris - drawing up a CAD model of the battery, MSEduino & drive base.
+
+
+Meeting Ended - 4:30 pm

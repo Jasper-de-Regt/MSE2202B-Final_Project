@@ -1,0 +1,59 @@
+Group Meeting - start 11:30 am 
+	 - all attending 
+ 
+Worked on the Summary Report II in preparation for the Second Design Review. 
+ 
+Meeting Ended at 1:00 pm 
+ 
+Group Meeting - Start at 1:30 pm 
+	- all attending 
+ 
+Design Review Notes ******************************************************** 
+- Need to get remaining parts on the robot 
+- Naish is concerned about the little remaining time -> programming wise 
+	 -> How to break down the coding? 
+- Address the design in the report 
+	  -> touch on the shortcomings of the design vs. prototype 
+- Don 't neglect the documentation 
+	 -> get someone working on PDF 
+- Get code going 
+- Skip 3D printing (if possible) to get robot working. 
+	 -> 3D printed parts and PCB 's are a time luxury. 
+- Substance or style in all areas 
+- Can use I2C or SPI to connect for communications. 
+- If using encoders, don 't mess with I2C 
+	->SPI might be better 
+- Simplify 
+ 
+End Design Review *********************************************************** 
+ 
+Group Consensus 
+ -> Trip a flag (from the proximity/line tracker sensors) 
+	 -> send the change digitally + sweep the arm 
+ 
+Tyler - prototype parts for end effector 
+Mike - arm, sensors 
+ 
+Things to do for the rest of the project: 
+1. Outline control flow						done 
+2. Outline code functions						soon (today) 
+3. Delegate functions (code) to be written)			today 
+4. Write code								soon  -> this weekend 
+5. Build sensor arrays (IR 's and ultrasonics)		this weekend (Jasper) 
+6. Build end piece							done by Tuesday  -> weekend (Chris, Tyler) 
+7. Choose a multiplex (MUX) chip				all  - this weekend  -> Order on Monday 
+8. Testing									Some systems on Monday  - Friday 
+9. Start Report								next Thursday (Mar 31st) 
+10. Final CAD model							next Thursday (Mar 31st) 
+11. Check & Finish PDF						Monday April 4th 
+12. Finish the Final Report						Tuesday April 5th 
+ 
+ Roles for the weekend: ulnone  
+Jasper 	 - Packaging sensors, blue prints (design drawings for parts) 
+Tyler 	 - Working on construction of arm, coding of mode 2 
+Mike 	 - Coding (IR, arm, servos) 
+Chris 	 - End effector prototype 
+ 
+All		 - research a MUX chip(s) to buy 
+ 
+Meeting End at 3:45 pm

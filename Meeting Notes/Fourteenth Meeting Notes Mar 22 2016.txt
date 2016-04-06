@@ -1,0 +1,30 @@
+Group Meeting - start at 4:30 pm 
+	 - all attending 
+ 
+To-do list today: 
+1. Decide on an IR sensor and order it. 
+2. Use dimensions from sensors to make a 3D printed case for the IR sensor array. 
+	 -> Also calculate how many sensors are needed 
+3. Determine # of multiplexers and order them. 
+4. Finish end effector design 
+5. Designate coding roles 
+ 
+1. Chosen Model TCRT5000 - will order soon 
+2. Sensor is digital  -> no need to multiplex 
+3. N/A 
+4. Will play with design later 
+5. Coding Roles 
+	- Jasper  - Encoder-motor  -> servo library 
+	- Mike  - Block handling 
+	- Chris  - Finding black lines  -> tesseract deposit code 
+	- Tyler  - Mode 2 
+ 
+Tyler agreed to research suppliers and order the sensors if not ordering through the electronics shop. 
+ 
+Meeting End 5:50 pm 
+
+Group Meeting online - start at 9:45 pm 
+ 
+We compared different suppliers of the aforementioned TCRT5000. 
+ 
+Meeting Ended  at 11:00 pm

@@ -1,30 +1,24 @@
-{\rtf1\ansi\ansicpg1252\cocoartf1265\cocoasubrtf210
-{\fonttbl\f0\fswiss\fcharset0 Helvetica;}
-{\colortbl;\red255\green255\blue255;}
-\margl1440\margr1440\vieww10800\viewh8400\viewkind0
-\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural
-
-\f0\fs24 \cf0 Start at 1:00 pm\
-- all attending\
-\
-- Electromagnet would be \ul worse\ulnone  than neodymium magnets\
-- Need to find out exactly what material the tesseracts are made of to determine if the IR light will pass through or reflect back.\
-\
-\
-Stuff to do this week\
-- Get Magnets before choosing a servo -> today\
-	\'97 torque is determined by magnet\'92s force\
-- Get tesseracts specs from Eugen\
-- Test the IR sensor (see if it can work with tesseract) on Thursday\
-	\'97> use fog to figure out the angle it emits at(?)\
-- drive base pre-prototype\
-	\'97> disk\
-	\'97> servos -> design for stepper -> justify\
-	\'97> wheels\
-	\'97> MSEduino mount\
-	\'97> battery\
-- SolidWorks drive base model\
-\
-Friday => assemble drive base (between calculus & dynamics - after?)\
-\
-Meeting end at 1:30 pm}
+Group Meeting Start at 1:00 pm 
+		- all attending 
+ 
+- Electromagnet would be worse than neodymium magnets 
+- Need to find out exactly what material the tesseracts are made of to determine if the IR light will pass through or reflect back. 
+ 
+ 
+Stuff to do this week 
+- Get Magnets before choosing a servo -> today 
+	 - torque is determined by magnet's force 
+- Get tesseracts specs from Eugen 
+- Test the IR sensor (see if it can work with tesseract) on Thursday 
+	  -> use fog to figure out the angle it emits at(?) 
+- drive base pre-prototype 
+	  -> disk 
+	  -> servos -> design for stepper -> justify 
+	  -> wheels 
+	  -> MSEduino mount 
+	  -> battery 
+- SolidWorks drive base model 
+ 
+Friday => assemble drive base (between calculus & dynamics - after?) 
+ 
+Meeting end at 1:30 pm

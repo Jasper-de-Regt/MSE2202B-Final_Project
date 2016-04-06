@@ -30,7 +30,7 @@ const int ci_wrist_parallel = 98;         // angle of the servo_wrist when paral
 const int ci_wrist_carry = 0;             // 0 is the correct value
 const int ci_wrist_push_away = 35;        // wrist position to push away bad tesseracts
 // encoder value constants
-const int ci_turntable_left = 380;          // encoder ticks of the turntable at far left position
+const int ci_turntable_left = 380;          // encoder ticks of the turntable at far left position //Value was 380
 const int ci_turntable_right = 1280;        // encoder ticks of the turntable at far right position
 const int ci_turntable_center = 800;        // encoder ticks of the turntable at center position (straight forward)
 const int ci_arm_scanning_height = 20;       // encoder ticks with the arm at a height ideal for tesseract scanning/pickup
@@ -118,6 +118,8 @@ void setup() {
   pinMode(ci_IR_crown_pin, INPUT);
   pinMode(ci_arm_linetracker_pin, INPUT);
   pinMode(ci_hall_effect_pin, INPUT);
+  
+  //moveArmSweep(arm_motor, ci_arm_carry_height);
 
 
   //*********************************************************************
@@ -139,7 +141,7 @@ void setup() {
 }//****************end setup****************end setup****************end setup****************end setup****************end setup****************
 
 char wall = 'l';  // which side the wall is on when calling wall follow
-int dis = 15;     // distance to drive from wall
+int dis = 35;     // distance to drive from wall
 int mode = 1;     // switchcase variable
 bool found = false; // has a tesseract been found
 const int encodercm = 38.9;   //31.75encoder ticks per cm constant, derived experimentally
@@ -162,7 +164,7 @@ unsigned int ui_tesseracts_left = 3; // Measures the number of tesseracts left t
 
 
 
-int mySpeed = 1630;
+int mySpeed = 1630;      // Was 1630
 #define maincode;
 
 // garbage variables

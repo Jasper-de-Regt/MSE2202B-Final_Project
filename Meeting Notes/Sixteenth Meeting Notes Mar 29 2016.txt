@@ -1,0 +1,15 @@
+Group Meeting - start at 5:40 pm 
+		 - all attending 
+ 
+Jasper is going to mount the MSEduino. 
+Tyler and Chris are working on their respective designs for the end effector. 
+Mike is coding. 
+ 
+Jasper is working on writing code to allow the robot to drive parallel to the wall using an ultrasonic sensor. 
+Tyler is working on his design. 
+Chris is rewriting his movetoPosn() function to work with all the servos. 
+Mike is writing variable declarations, sorting out what variables we will need for the code. 
+ 
+Meeting tomorrow after dynamics (1:30 pm). 
+ 
+Meeting End at 12:20 am 

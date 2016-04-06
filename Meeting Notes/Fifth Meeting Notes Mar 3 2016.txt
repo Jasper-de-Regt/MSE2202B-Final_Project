@@ -1,56 +1,59 @@
-{\rtf1\ansi\ansicpg1252\cocoartf1265\cocoasubrtf210
-{\fonttbl\f0\fswiss\fcharset0 Helvetica;}
-{\colortbl;\red255\green255\blue255;}
-\margl1440\margr1440\vieww10800\viewh8400\viewkind0
-\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural
+Group Meeting Start 1:30 pm  
+		-everyone attending 
+ 
+A review of functional decomposition 
+-Jasper is writing pros and cons. 
+ 
+Brainstorming questions for the design review 
+ 
+ ******************** Design Review  *********************
+- Different size wheels available   -> check the glass case 
+- More research into navigation 
+- Design elements (and materials) should be partially aspirational 
+	  -> design to the final product, not the prototype 
+* Test sensors 
+	  -> how close/fast does the device have to be to detect the tesseracts 
+		  - magnetic insensitivities 
+	  -> how would the IR / ultrasonic sensor respond to the tesseracts? 
+- Rip relays apart for the electromagnet 
+	  -> check the recycling bins or buy them 
+- for electro-magnet manipulator, sliding will be easier than vertical lifting 
+-using encoders is okay if slippage is taken into account 
+	  -> use another subsystem (more is better w.r.t encoders) 
+	  -> figure out how to handle the case of getting turned around 
+- hinging at the platforms will improve repair time 
+- prototype the base soon 
+	  -> test  sensors 
+* Prototype with code should be  ul done ulnone  by next design review. 
+- how to handle collisions? 
+	  -> detection speeds 
+- tesseracts may be close to the wall 
+	- probably not on, but close enough that it would be possible to knock it into 
+	and get stuck on the wall. 
+- Once a tesseract is  '93caught '94, cannot touch another one. 
+- could use limit switches & hall-effect sensors to filter them out 
+* Try putting two tesseracts closely together 
+- It is indeterminate whether black lines on the arena will come down the sides of the arena '92s outer rails 
+- gate will not be fixed to the arena 
+- Stepper motors tend to be heavy 
+	- may miss steps   -> tune down acceleration 
+	  -> will we be able to accelerate fast enough to get going but not miss steps? 
+- avoid delays in the code (it may get marked) 
+- don '92t need to code for sensors not being used 
+	  -> parts must  '93fit '94 (voltage, current, size restrictions) 
+	  -> BS will be spotted 
+		-> must be justified 
+- full CAD drawings for anything we design 
+	-> label pre-built parts 
+- Suppliers   -> digikey, robotshop 
+- Pre-made parts can be modified then 3D printed 
+- Email Naish about QFD status & Gantt chart
 
-\f0\fs24 \cf0 Meeting Start 1:30 pm \
--everyone attending\
-\
-A review of functional decomposition\
--Jasper is writing pros and cons.\
-\
-Brainstorming questions for the design review\
-\
-\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97Design Review\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\
-- Different size wheels available \'97> check the glass case\
-- More research into navigation\
-- Design elements (and materials) should be partially aspirational\
-	\'97> design to the final product, not the prototype\
-* Test sensors\
-	\'97> how close/fast does the device have to be to detect the tesseracts\
-		\'97 magnetic insensitivities\
-	\'97> how would the IR / ultrasonic sensor respond to the tesseracts?\
-- Rip relays apart for the electromagnet\
-	\'97> check the recycling bins or buy them\
-- for electro-magnet manipulator, sliding will be easier than vertical lifting\
--using encoders is okay if slippage is taken into account\
-	\'97> use another subsystem (more is better w.r.t encoders)\
-	\'97> figure out how to handle the case of getting turned around\
-- hinging at the platforms will improve repair time\
-- prototype the base soon\
-	\'97> test  sensors\
-* Prototype with code should be \ul done\ulnone  by next design review.\
-- how to handle collisions?\
-	\'97> detection speeds\
-- tesseracts may be close to the wall\
-	- probably not on, but close enough that it would be possible to knock it into\
-	and get stuck on the wall.\
-- Once a tesseract is \'93caught\'94, cannot touch another one.\
-- could use limit switches & hall-effect sensors to filter them out\
-* Try putting two tesseracts closely together\
-- It is indeterminate whether black lines on the arena will come down the sides of the arena\'92s outer rails\
-- gate will not be fixed to the arena\
-- Stepper motors tend to be heavy\
-	- may miss steps \'97> tune down acceleration\
-	\'97> will we be able to accelerate fast enough to get going but not miss steps?\
-- avoid delays in the code (it may get marked)\
-- don\'92t need to code for sensors not being used\
-	\'97> parts must \'93fit\'94 (voltage, current, size restrictions)\
-	\'97> BS will be spotted\
-		-> must be justified\
-- full CAD drawings for anything we design\
-	-> label pre-built parts\
-- Suppliers \'97> digikey, robotshop\
-- Pre-made parts can be modified then 3D printed\
-- Email Naish about QFD status & Gantt chart}
+Group Homework
+Jasper 	-> CAD
+Michael -> Infrared acrylic specs
+Chris 	-> tight-beam sonar/ultrasonic sensor
+Tyler	-> max magnetic field strength for electromagnet vs. 
+			neodymium magnet (0.5 in)^3
+
+End of Meeting 4:30 pm

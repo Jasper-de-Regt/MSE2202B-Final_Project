@@ -1,0 +1,14 @@
+Group Meeting Start - 10:30 am 
+	- all members attending 
+ 
+Group began by discussing component and circuitry layouts on both micro controllers and the levels of the robot.  
+ 
+Decision:  
+- Scissor lift (mode 2) and an arm (mode 1 & 2) 
+- Longer arm (mode 1 & 2) 
+ 
+Group decided to use a 2-part arm mounted on turntable connected to the top level instead of using the scissor lift idea. The justification was that it would involve designing one mechanism instead of two discrete mechanisms and that having one arm would be sufficient to meet the height demands in mode 2. 
+ 
+Group built a working prototype of the arm and used some code to test the prototype. Tyler made a modified version of the arm to be more compact around the base. 
+ 
+Meeting End at 12:25 pm

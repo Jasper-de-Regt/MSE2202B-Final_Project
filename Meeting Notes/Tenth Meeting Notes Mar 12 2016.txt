@@ -1,0 +1,20 @@
+Group Meeting  - start at 9 am 
+	- all attending 
+ 
+Discussed possible arm ideas for the device. 
+ 
+Jasper built an array of light sensors and wrote code to test the sensory array. 
+ 
+Tyler did further testing with the light sensors. 
+ 
+Chris designed an experiment to measure the sensitivity changes of the Hall Effect sensor dependent on the proximity of the gripper magnet. Mike helped record data. Tyler and Mike helped with data collection. 
+
+Chris Analyzed the data.
+ 
+See Experimental Data Excel document in the PDF. 
+ 
+Jasper had the light sensor array working and experimented with the spacing of light sensors. 
+ 
+Time of next meeting was not scheduled. 
+ 
+Meeting End at 2 pm
